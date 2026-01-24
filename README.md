@@ -2,6 +2,8 @@
 
 A reusable slide deck template system built with TanStack Router, React, and Tailwind CSS.
 
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/theclaymethod/vibe-decks)
+
 ## Features
 
 - **1920x1080 Scaling** - Slides scale to fit any viewport while maintaining aspect ratio

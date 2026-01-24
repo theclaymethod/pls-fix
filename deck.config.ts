@@ -10,7 +10,7 @@ export const deckConfig = {
   design: {
     width: 1920,
     height: 1080,
-    minViewportWidth: 1024,
+    minViewportWidth: 0,
   },
 
   theme: {

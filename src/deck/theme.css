@@ -1,0 +1,22 @@
+:root {
+  --color-primary: #ff6e41;
+  --color-primary-dark: #e55a30;
+
+  --color-bg-light: #ffffff;
+  --color-bg-dark: #1a1a1a;
+  --color-bg-cream: #fcfbf7;
+
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #555555;
+  --color-text-muted: #777777;
+  --color-text-inverse: #ffffff;
+
+  --color-border: rgba(0, 0, 0, 0.1);
+  --color-border-light: rgba(255, 255, 255, 0.1);
+
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'IBM Plex Mono', monospace;
+
+  --slide-padding: 64px;
+  --slide-gap: 48px;
+}

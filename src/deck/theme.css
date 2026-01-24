@@ -11,6 +11,7 @@
 
   --color-bg-primary: var(--color-white);
   --color-bg-secondary: #F5F5F5;
+  --color-bg-dark: var(--color-black);
   --color-border: var(--color-black);
   --color-border-light: #333333;
 

@@ -75,11 +75,10 @@ export function DeckLayout({ children, currentSlide, slides }: DeckLayoutProps) 
 
         {deckConfig.navigation.showSlideNumbers && (
           <div
-            className="absolute bottom-[32px] right-[32px] text-[16px] tracking-[0.15em]"
-            style={{ fontFamily: "var(--font-body)", color: "#999" }}
+            className="absolute bottom-[20px] right-[24px] text-[11px] tracking-[0.1em]"
+            style={{ fontFamily: "var(--font-mono)", color: "#999" }}
           >
-            {String(currentSlide).padStart(2, "0")} /{" "}
-            {String(totalSlides).padStart(2, "0")}
+            {String(currentSlide).padStart(2, "0")}/{String(totalSlides).padStart(2, "0")}
           </div>
         )}
       </div>

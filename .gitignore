@@ -33,3 +33,9 @@ src/routeTree.gen.ts
 
 # Builder temp files
 .builder-tmp/
+
+# Playwright MCP
+.playwright-mcp/
+
+# Cloudflare
+.wrangler/

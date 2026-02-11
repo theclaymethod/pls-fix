@@ -12,9 +12,15 @@ interface ChatThreadProps {
 type Segment =
   | { kind: "text"; text: string }
   | { kind: "tool"; tool: string; target: string }
-  | { kind: "result"; text: string };
+  | { kind: "result"; text: string }
+  | { kind: "question"; text: string }
+  | { kind: "option"; label: string; description: string }
+  | { kind: "plan"; text: string };
 
 const TOOL_RE = /^\[(Read|Edit|Write|Bash|Glob|Grep|Task|Skill)\]\s*(.*)$/;
+const QUESTION_RE = /^\[Question\]\s*(.*)$/;
+const OPTION_RE = /^\[Option\]\s*(.*)$/;
+const PLAN_RE = /^\[Plan\]\s*(.*)$/;
 
 function parseSegments(raw: string): Segment[] {
   const lines = raw.split("\n");
@@ -29,11 +35,31 @@ function parseSegments(raw: string): Segment[] {
   };
 
   for (const line of lines) {
-    const match = line.match(TOOL_RE);
-    if (match) {
+    const toolMatch = line.match(TOOL_RE);
+    const questionMatch = line.match(QUESTION_RE);
+    const optionMatch = line.match(OPTION_RE);
+    const planMatch = line.match(PLAN_RE);
+
+    if (questionMatch) {
+      flushText();
+      if (lastTool) { segments.push(lastTool); lastTool = null; }
+      segments.push({ kind: "question", text: questionMatch[1] });
+    } else if (optionMatch) {
+      flushText();
+      if (lastTool) { segments.push(lastTool); lastTool = null; }
+      const raw = optionMatch[1];
+      const dashIdx = raw.indexOf(" - ");
+      const label = dashIdx >= 0 ? raw.slice(0, dashIdx) : raw;
+      const description = dashIdx >= 0 ? raw.slice(dashIdx + 3) : "";
+      segments.push({ kind: "option", label, description });
+    } else if (planMatch) {
+      flushText();
+      if (lastTool) { segments.push(lastTool); lastTool = null; }
+      segments.push({ kind: "plan", text: planMatch[1] });
+    } else if (toolMatch) {
       flushText();
       if (lastTool) segments.push(lastTool);
-      lastTool = { kind: "tool", tool: match[1], target: match[2] };
+      lastTool = { kind: "tool", tool: toolMatch[1], target: toolMatch[2] };
     } else if (lastTool && line.trim() && !line.match(TOOL_RE)) {
       segments.push(lastTool);
       lastTool = null;
@@ -100,6 +126,52 @@ function ResultLine({ text }: { text: string }) {
   );
 }
 
+function QuestionBlock({ text }: { text: string }) {
+  return (
+    <div className="my-2 px-3 py-2 rounded-lg bg-indigo-50 border border-indigo-200">
+      <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-500 block mb-1">
+        Question
+      </span>
+      <p className="text-xs text-indigo-900 leading-relaxed">{text}</p>
+    </div>
+  );
+}
+
+function OptionButton({
+  label,
+  description,
+  onSelect,
+}: {
+  label: string;
+  description: string;
+  onSelect: (label: string) => void;
+}) {
+  return (
+    <button
+      onClick={() => onSelect(label)}
+      className="w-full text-left my-0.5 px-3 py-1.5 rounded border border-indigo-200 bg-white hover:bg-indigo-50 hover:border-indigo-300 transition-colors group"
+    >
+      <span className="text-xs font-medium text-indigo-700 group-hover:text-indigo-900">
+        {label}
+      </span>
+      {description && (
+        <span className="text-[10px] text-neutral-500 block mt-0.5">{description}</span>
+      )}
+    </button>
+  );
+}
+
+function PlanIndicator({ text }: { text: string }) {
+  return (
+    <div className="flex items-center gap-1.5 my-2 px-3 py-2 rounded-lg bg-violet-50 border border-violet-200">
+      <span className="text-[9px] font-bold uppercase tracking-wider text-violet-500 shrink-0">
+        Plan Mode
+      </span>
+      <span className="text-[10px] text-violet-700">{text}</span>
+    </div>
+  );
+}
+
 function renderInlineMarkdown(text: string): ReactNode[] {
   const parts: ReactNode[] = [];
   const re = /(\*\*(.+?)\*\*)|(`(.+?)`)/g;
@@ -136,7 +208,15 @@ function renderInlineMarkdown(text: string): ReactNode[] {
   return parts;
 }
 
-function AssistantContent({ text, isStreaming }: { text: string; isStreaming: boolean }) {
+function AssistantContent({
+  text,
+  isStreaming,
+  onSelectOption,
+}: {
+  text: string;
+  isStreaming: boolean;
+  onSelectOption: (label: string) => void;
+}) {
   const segments = parseSegments(text);
 
   const nodes: ReactNode[] = segments.map((seg, i) => {
@@ -145,6 +225,19 @@ function AssistantContent({ text, isStreaming }: { text: string; isStreaming: bo
         return <ToolBlock key={i} tool={seg.tool} target={seg.target} />;
       case "result":
         return <ResultLine key={i} text={seg.text} />;
+      case "question":
+        return <QuestionBlock key={i} text={seg.text} />;
+      case "option":
+        return (
+          <OptionButton
+            key={i}
+            label={seg.label}
+            description={seg.description}
+            onSelect={onSelectOption}
+          />
+        );
+      case "plan":
+        return <PlanIndicator key={i} text={seg.text} />;
       case "text":
         return (
           <span key={i} className="whitespace-pre-wrap">
@@ -228,6 +321,9 @@ export function ChatThread({
               <AssistantContent
                 text={msg.text}
                 isStreaming={msg.status === "streaming"}
+                onSelectOption={(label) => {
+                  if (!isGenerating) onSend(label);
+                }}
               />
             </div>
           )

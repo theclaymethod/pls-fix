@@ -16,6 +16,26 @@ function shortPath(p: unknown): string {
   return i >= 0 ? s.slice(i) : s;
 }
 
+function formatAskUserQuestion(input: Record<string, unknown>): string {
+  const questions = input.questions as Array<{
+    question: string;
+    options: Array<{ label: string; description?: string }>;
+  }>;
+  if (!Array.isArray(questions)) return "[Question]";
+
+  const parts: string[] = [];
+  for (const q of questions) {
+    parts.push(`[Question] ${q.question}`);
+    if (Array.isArray(q.options)) {
+      for (const opt of q.options) {
+        const desc = opt.description ? ` - ${opt.description}` : "";
+        parts.push(`[Option] ${opt.label}${desc}`);
+      }
+    }
+  }
+  return parts.join("\n");
+}
+
 function formatToolUse(name: string, input: Record<string, unknown>): string {
   switch (name) {
     case "Read":
@@ -30,6 +50,10 @@ function formatToolUse(name: string, input: Record<string, unknown>): string {
       return `[Glob] ${input.pattern}`;
     case "Grep":
       return `[Grep] ${input.pattern}`;
+    case "AskUserQuestion":
+      return formatAskUserQuestion(input);
+    case "EnterPlanMode":
+      return "[Plan] Preparing implementation plan...";
     default:
       return `[${name}]`;
   }

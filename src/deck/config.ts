@@ -4,6 +4,7 @@ export interface SlideConfig {
   id: string;
   title: string;
   shortTitle: string;
+  fileKey: string;
 }
 
 /**
@@ -96,11 +97,7 @@ function getComponent(fileKey: string): ComponentType {
   return LazyComponent;
 }
 
-interface SlideConfigInternal extends SlideConfig {
-  fileKey: string;
-}
-
-const SLIDE_CONFIG_INTERNAL: SlideConfigInternal[] = [
+const SLIDE_CONFIG_INTERNAL: SlideConfig[] = [
   { id: "title", fileKey: "01-title", title: "Title Slide", shortTitle: "Title" },
   { id: "intro", fileKey: "02-intro", title: "Introduction", shortTitle: "Intro" },
   { id: "problem", fileKey: "03-problem", title: "Before & After", shortTitle: "Problem" },
@@ -120,10 +117,7 @@ const SLIDE_CONFIG_INTERNAL: SlideConfigInternal[] = [
   { id: "showcase", fileKey: "17-showcase", title: "Three-Up Showcase", shortTitle: "Showcase" },
 ];
 
-// Export public config without internal fileKey
-export const SLIDE_CONFIG: SlideConfig[] = SLIDE_CONFIG_INTERNAL.map(
-  ({ fileKey, ...rest }) => rest
-);
+export const SLIDE_CONFIG: SlideConfig[] = SLIDE_CONFIG_INTERNAL;
 
 export const TOTAL_SLIDES = SLIDE_CONFIG.length;
 
@@ -153,6 +147,12 @@ export function getSlideComponent(slideNumber: number): ComponentType {
 
 export function getSlideConfig(slideNumber: number): SlideConfig | undefined {
   return SLIDE_CONFIG[slideNumber - 1];
+}
+
+export function invalidateSlideCache(fileKey: string): void {
+  loadedComponentCache.delete(fileKey);
+  loadingPromiseCache.delete(fileKey);
+  lazyComponentCache.delete(fileKey);
 }
 
 export const SLIDES_NAV = SLIDE_CONFIG.map((slide, index) => ({

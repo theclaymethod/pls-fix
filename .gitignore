@@ -30,3 +30,6 @@ pnpm-debug.log*
 
 # Generated
 src/routeTree.gen.ts
+
+# Builder temp files
+.builder-tmp/

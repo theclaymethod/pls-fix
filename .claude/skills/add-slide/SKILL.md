@@ -1,6 +1,6 @@
 # Add Slide Skill
 
-Add a new slide to the deck with proper numbering and registration.
+Add a new slide to the deck — built from the design system, driven by the user's prompt.
 
 ## Auto-invoke triggers
 - "add a slide"
@@ -13,20 +13,59 @@ Add a new slide to the deck with proper numbering and registration.
 ### Step 1: Gather Information
 Ask the user for:
 1. **Position**: Slide number (1-based) or "end" for last position
-2. **Template**: Which template to use (see available templates below)
-3. **Slide name**: kebab-case name (e.g., "our-mission")
+2. **Slide name**: kebab-case name (e.g., "our-mission")
+3. **What they want**: The content, layout, and feel of the slide
 
-### Step 2: Create Slide File
-Create `src/deck/slides/NN-{name}.tsx` with this structure:
+### Step 2: Design the Slide
+
+**Build from the design system, not from templates.** Templates exist as reference examples — they show _one way_ to compose the design system components. Your job is to compose a slide that best serves the user's prompt.
+
+**Design system primitives** (import from `@/design-system`):
+
+| Category | Components |
+|----------|------------|
+| **Layout** | `SlideContainer`, `TwoColumnLayout`, `GridSection`, `CenterContent`, `Container`, `HeaderBar`, `Divider` |
+| **Typography** | `HeroTitle`, `SectionHeader`, `Eyebrow`, `BodyText`, `MonoText`, `TechCode`, `SectionMarker`, `Quote`, `ListItem`, `PipeList`, `Label`, `CategoryLabel`, `SlideNumber` |
+| **Cards** | `FeatureCard`, `StatCard`, `QuoteCard`, `InfoCard`, `ProcessCard` |
+| **Decorative** | `IndustrialIcon`, `IconRow`, `LogoMark`, `CategoryGrid`, `FeatureBlock`, `WireframeBox`, `IsometricGrid` |
+| **Types** | `SlideMode` ("dark" \| "yellow" \| "white"), `IconSymbol` |
+
+**CSS variables** (via `style={{}}`, NOT Tailwind color classes):
+- Text: `var(--color-text-primary)`, `var(--color-text-secondary)`, `var(--color-text-muted)`
+- Backgrounds: `var(--color-bg-primary)`, `var(--color-bg-secondary)`, `var(--color-yellow)`
+- Borders: `var(--color-border)`, `var(--color-border-light)`
+- Fonts: `var(--font-heading)`, `var(--font-body)`, `var(--font-mono)`
+
+**Animations** (import from `motion/react`):
+- Use `motion.div` with `variants` for staggered reveals
+- Common pattern: `containerVariants` (stagger children) + `itemVariants` (fade + slide)
+
+**Key rules:**
+- Always wrap in `<SlideContainer mode={mode}>` — this sets up 1920x1080 padding and theme variables
+- Use the design system components for text/layout, not raw HTML elements
+- Use `style={{}}` with CSS variables for colors, NOT Tailwind color utilities (Tailwind colors won't respect the theme mode)
+- You can use Tailwind for spacing, layout, sizing — just not for colors
+- Study an existing template in `src/templates/` if you need to see how a similar layout is composed
+- Prioritize matching what the user asked for over reusing a template's structure
+
+**When to use a template vs. composing from scratch:**
+- If the user's request maps cleanly to a template → use the template (it's well-tested)
+- If the user wants something custom, a different layout, or a mix of elements → compose from the design system directly
+- If the user explicitly names a template → use it
+
+### Step 3: Create Slide File
+Create `src/deck/slides/NN-{name}.tsx`:
 
 ```tsx
-import { {TemplateName} } from "@/templates";
+import { motion } from "motion/react";
+import { SlideContainer, /* other design system imports */ } from "@/design-system";
+// Only import from @/templates if you're actually using a full template
 
 export function SlideNNCamelCase() {
   return (
-    <{TemplateName}
-      // Template-specific props
-    />
+    <SlideContainer mode="white">
+      {/* Compose freely from design system primitives */}
+    </SlideContainer>
   );
 }
 ```
@@ -36,61 +75,26 @@ export function SlideNNCamelCase() {
 - Export: `SlideNNCamelCase` (e.g., `Slide05OurMission`)
 - NN is zero-padded 2-digit number
 
-### Step 3: Register in config.ts
+### Step 4: Register in config.ts
 Add to `src/deck/config.ts`:
-1. Add import statement in the imports section (sorted by number)
-2. Add config entry in `SLIDE_CONFIG` array at the correct position:
 
+1. Add a loader entry in `slideLoaders`:
 ```typescript
-{
-  id: "kebab-case-name",
-  title: "Full Title",
-  shortTitle: "Short",
-  component: SlideNNCamelCase,
-}
+"NN-name": () =>
+  import("./slides/NN-name").then((m) => ({ default: m.SlideNNCamelCase })),
 ```
 
-### Step 4: Renumber if Inserting
+2. Add config entry in `SLIDE_CONFIG_INTERNAL` at the correct position:
+```typescript
+{ id: "name", fileKey: "NN-name", title: "Full Title", shortTitle: "Short" },
+```
+
+### Step 5: Renumber if Inserting
 If inserting in the middle (not at end):
 1. Rename all subsequent slide files (increment their NN prefix)
-2. Update all imports in config.ts to match new filenames
+2. Update all loader keys and import paths in config.ts
 3. Update all component names in both slide files and config.ts
+4. Update all config entries (fileKey values)
 
-### Step 5: Verify
+### Step 6: Verify
 Run `pnpm build` to ensure no errors.
-
-## Available Templates
-
-| Template | Best For |
-|----------|----------|
-| TitleTemplate | Opening slide, section headers |
-| HeroTemplate | Bold statement with visual |
-| SplitContentTemplate | Text + image side by side |
-| TwoColumnTemplate | Two content areas |
-| StatCardsTemplate | Key metrics/numbers |
-| QuoteTemplate | Testimonials, quotes |
-| BigNumberTemplate | Single impactful number |
-| FeatureGridTemplate | Feature lists (2-4 items) |
-| IconGridTemplate | Icon-based feature grid |
-| TimelineTemplate | Process, milestones |
-| ComparisonTableTemplate | Feature comparison |
-| BeforeAfterTemplate | Before/after comparison |
-| DiagramTemplate | Custom diagrams |
-| FullscreenImageTemplate | Full-bleed image |
-| PhotoGridTemplate | Multiple photos |
-| PhoneMockupTemplate | Mobile app screenshots |
-| BrowserMockupTemplate | Web app screenshots |
-| TeamTemplate | Team member profiles |
-| LogoCloudTemplate | Partner/client logos |
-| StackedCardsTemplate | Layered card content |
-| ThreeUpTemplate | Three-item showcase |
-
-## Example
-
-User: "Add a slide at position 5 using the quote template called client-testimonial"
-
-Result:
-- Creates `src/deck/slides/05-client-testimonial.tsx`
-- Exports `Slide05ClientTestimonial`
-- Renumbers slides 05-17 to 06-18
-- Updates all imports and config entries

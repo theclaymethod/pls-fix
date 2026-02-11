@@ -4,7 +4,7 @@ export function Slide09Closing() {
   return (
     <BigNumberTemplate
       eyebrow="Growth"
-      number="247%"
+      number="200%"
       label="Year over Year"
       description="Our platform has delivered consistent growth for partners across all key metrics"
       variant="primary"

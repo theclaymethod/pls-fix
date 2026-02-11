@@ -138,7 +138,7 @@ export function DesignSystemWizard() {
   useEffect(() => {
     if (step === "execute" && generation.status === "complete") {
       setStep("complete");
-      fetch("http://localhost:3333/api/assess-design-system", {
+      fetch("/api/assess-design-system", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

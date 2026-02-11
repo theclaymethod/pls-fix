@@ -27,7 +27,7 @@ export function DesignerView() {
   const [briefContent, setBriefContent] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:3333/api/design-brief")
+    fetch("/api/design-brief")
       .then((r) => r.json())
       .then((data: { content: string | null }) => setBriefContent(data.content))
       .catch(() => {});

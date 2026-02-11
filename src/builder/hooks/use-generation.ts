@@ -1,7 +1,6 @@
 import { useRef, useState, useCallback } from "react";
 import type { GenerationState } from "../types";
 
-const SERVER_URL = "http://localhost:3333";
 
 interface StreamCallbacks {
   onText: (text: string) => void;
@@ -224,7 +223,7 @@ export function useGeneration() {
 
   const generate = useCallback(
     async (prompt: string, imageDataUrl?: string) => {
-      await streamRequest(`${SERVER_URL}/api/generate`, {
+      await streamRequest(`/api/generate`, {
         prompt,
         image: imageDataUrl,
       });
@@ -240,7 +239,7 @@ export function useGeneration() {
       onSession: (sessionId: string) => void
     ) => {
       await streamRequest(
-        `${SERVER_URL}/api/edit`,
+        `/api/edit`,
         { prompt, filePath, sessionId },
         onSession
       );
@@ -255,7 +254,7 @@ export function useGeneration() {
       onSession: (sessionId: string) => void
     ) => {
       await streamRequest(
-        `${SERVER_URL}/api/edit-design-system`,
+        `/api/edit-design-system`,
         { prompt, sessionId },
         onSession
       );
@@ -266,7 +265,7 @@ export function useGeneration() {
   const applyDesignSystem = useCallback(
     async (fileKey: string, onSession?: (sessionId: string) => void) => {
       await streamRequest(
-        `${SERVER_URL}/api/apply-design-system`,
+        `/api/apply-design-system`,
         { fileKey },
         onSession
       );
@@ -280,7 +279,7 @@ export function useGeneration() {
       onSession?: (sessionId: string) => void
     ) => {
       await streamRequest(
-        `${SERVER_URL}/api/create-design-system`,
+        `/api/create-design-system`,
         body,
         onSession
       );

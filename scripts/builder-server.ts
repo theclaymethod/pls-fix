@@ -6,7 +6,7 @@ import { mkdirSync, writeFileSync, readFileSync, readdirSync, statSync, unlinkSy
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, "..");
-const PORT = 3333;
+const PORT = Number(process.env.BUILDER_PORT) || 3333;
 const WIREFRAME_DIR = resolve(PROJECT_ROOT, ".builder-tmp");
 const WIREFRAME_PATH = resolve(WIREFRAME_DIR, "wireframe.png");
 const ASSETS_DIR = resolve(PROJECT_ROOT, "public/assets");

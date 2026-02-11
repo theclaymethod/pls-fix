@@ -1,5 +1,14 @@
 # Design System Changelog
 
+## 2026-02-11 — Add data visualization and advanced interactions
+
+- **Added** `data-viz.tsx` — six data visualization primitives: ProgressRing, AnimatedCounter, TrendIndicator, Sparkline, HarveyBall, MagnitudeBar
+- **Added** to `interactions.tsx` — ShineBorder (mouse-tracking glow border), PulseRing (expanding ring indicator), QuoteCarousel (auto-rotating quotes), Tabs (panel switcher), Tooltip (hover context), SkeletonBlock (loading placeholder)
+- **Added** `pathDrawVariants` to `animations.ts` for SVG path drawing animations
+- **Added** showcase sections 12-14: Data Visualization, Tabs & Carousels, Effects & Utilities
+- All data-viz components use CSS variables for color mode compatibility
+- Extracted patterns from whoop-1 deck and re-implemented with pure SVG (no external chart dependencies)
+
 ## 2026-02-11 — Add interaction layer
 
 - **Added** `animations.ts` — shared motion variant presets (fadeIn, slideUp, slideLeft, scaleIn, stagger container factory, hover presets) extracted from template patterns

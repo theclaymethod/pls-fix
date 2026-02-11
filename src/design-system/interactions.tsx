@@ -1,5 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useMotionTemplate,
+} from "motion/react";
 import { cn } from "@/lib/utils";
 import {
   fadeInVariants,
@@ -254,5 +259,284 @@ export function StaggerContainer({
     >
       {children}
     </motion.div>
+  );
+}
+
+export function ShineBorder({
+  children,
+  color = "var(--color-yellow)",
+  radius = 300,
+  borderWidth = 3,
+  className,
+}: {
+  children: React.ReactNode;
+  color?: string;
+  radius?: number;
+  borderWidth?: number;
+  className?: string;
+}) {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
+    const rect = currentTarget.getBoundingClientRect();
+    const scaleX = currentTarget.offsetWidth / rect.width;
+    const scaleY = currentTarget.offsetHeight / rect.height;
+    mouseX.set((clientX - rect.left) * scaleX);
+    mouseY.set((clientY - rect.top) * scaleY);
+  }
+
+  const background = useMotionTemplate`
+    radial-gradient(${radius}px circle at ${mouseX}px ${mouseY}px, ${color}, transparent 70%)
+  `;
+
+  return (
+    <div className={cn("relative group", className)} onMouseMove={handleMouseMove}>
+      <motion.div
+        className="absolute pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        style={{
+          inset: `-${borderWidth}px`,
+          background,
+        }}
+      />
+      <div className="relative">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export function PulseRing({
+  size = 24,
+  color = "var(--color-text-primary)",
+  className,
+}: {
+  size?: number;
+  color?: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn("relative inline-flex items-center justify-center", className)}
+      style={{ width: size, height: size }}
+    >
+      <motion.div
+        className="absolute rounded-full"
+        style={{ border: `2px solid ${color}` }}
+        animate={{
+          width: [size * 0.4, size],
+          height: [size * 0.4, size],
+          opacity: [0.6, 0],
+        }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
+      />
+      <div
+        className="rounded-full"
+        style={{
+          width: size * 0.4,
+          height: size * 0.4,
+          backgroundColor: color,
+        }}
+      />
+    </div>
+  );
+}
+
+export function QuoteCarousel({
+  quotes,
+  interval = 5000,
+  className,
+}: {
+  quotes: { text: string; attribution?: string }[];
+  interval?: number;
+  className?: string;
+}) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((i) => (i + 1) % quotes.length);
+    }, interval);
+    return () => clearInterval(timer);
+  }, [quotes.length, interval]);
+
+  const current = quotes[index];
+
+  return (
+    <div className={className}>
+      <div className="relative overflow-hidden" style={{ minHeight: "4em" }}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.04 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
+            <p
+              className="text-[28px] leading-[1.3] uppercase"
+              style={{
+                fontFamily: "var(--font-heading)",
+                color: "var(--color-text-primary)",
+              }}
+            >
+              "{current.text}"
+            </p>
+            {current.attribution && (
+              <p
+                className="text-[16px] mt-3"
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  color: "var(--color-text-muted)",
+                }}
+              >
+                — {current.attribution}
+              </p>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      {quotes.length > 1 && (
+        <div className="flex gap-2 mt-4">
+          {quotes.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setIndex(i)}
+              className="h-[6px] transition-all duration-300 cursor-pointer"
+              style={{
+                width: i === index ? 32 : 6,
+                backgroundColor:
+                  i === index
+                    ? "var(--color-text-primary)"
+                    : "var(--color-border-light)",
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function Tabs({
+  items,
+  className,
+}: {
+  items: { label: string; content: React.ReactNode }[];
+  className?: string;
+}) {
+  const [active, setActive] = useState(0);
+
+  return (
+    <div className={className}>
+      <div
+        className="flex gap-0 border-b"
+        style={{ borderColor: "var(--color-border-light)" }}
+      >
+        {items.map((item, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => setActive(i)}
+            className="px-5 py-3 text-[16px] tracking-[0.1em] uppercase cursor-pointer transition-colors duration-200"
+            style={{
+              fontFamily: "var(--font-mono)",
+              color:
+                i === active
+                  ? "var(--color-text-primary)"
+                  : "var(--color-text-muted)",
+              backgroundColor: "transparent",
+              borderBottom:
+                i === active
+                  ? "2px solid var(--color-text-primary)"
+                  : "2px solid transparent",
+            }}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={active}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="pt-6"
+        >
+          {items[active].content}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
+
+export function Tooltip({
+  children,
+  content,
+  position = "top",
+  className,
+}: {
+  children: React.ReactNode;
+  content: React.ReactNode;
+  position?: "top" | "bottom";
+  className?: string;
+}) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div
+      className={cn("relative inline-block", className)}
+      onMouseEnter={() => setVisible(true)}
+      onMouseLeave={() => setVisible(false)}
+    >
+      {children}
+      <AnimatePresence>
+        {visible && (
+          <motion.div
+            initial={{ opacity: 0, y: position === "top" ? 4 : -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: position === "top" ? 4 : -4 }}
+            transition={{ duration: 0.15 }}
+            className="absolute left-1/2 -translate-x-1/2 z-50 px-3 py-2 whitespace-nowrap"
+            style={{
+              [position === "top" ? "bottom" : "top"]: "calc(100% + 8px)",
+              backgroundColor: "var(--color-bg-dark, #0A0A0A)",
+              color: "var(--color-text-inverse, #FFFFFF)",
+              fontFamily: "var(--font-mono)",
+              fontSize: "14px",
+              border: "1px solid var(--color-border-light)",
+            }}
+          >
+            {content}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+export function SkeletonBlock({
+  width,
+  height = 20,
+  className,
+}: {
+  width?: number | string;
+  height?: number | string;
+  className?: string;
+}) {
+  return (
+    <motion.div
+      className={className}
+      style={{
+        width: width ?? "100%",
+        height,
+        backgroundColor: "var(--color-bg-secondary)",
+      }}
+      animate={{ opacity: [0.4, 0.7, 0.4] }}
+      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+    />
   );
 }

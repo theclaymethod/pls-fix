@@ -14,8 +14,22 @@ import {
   StaggerContainer,
   AccordionItem,
   ExpandableCard,
+  ShineBorder,
+  PulseRing,
+  QuoteCarousel,
+  Tabs,
+  Tooltip,
+  SkeletonBlock,
 } from "./interactions";
 import { slideUpVariants } from "./animations";
+import {
+  ProgressRing,
+  AnimatedCounter,
+  TrendIndicator,
+  Sparkline,
+  HarveyBall,
+  MagnitudeBar,
+} from "./data-viz";
 import {
   HeroTitle,
   SectionHeader,
@@ -866,30 +880,273 @@ export function DesignSystemShowcase() {
             </HoverCaption>
           </GridSection>
 
-          <Eyebrow className="mb-6">Lift Comparison on Stat Cards</Eyebrow>
-          <BodyText size="sm" className="mb-4">
-            sm, md, and lg lift amounts compared side by side on stat cards.
+        </BriefSection>
+      </SlideContainer>
+
+      {/* 12 — Data Visualization */}
+      <SlideContainer mode="white" className="h-auto min-h-[1080px]">
+        <BriefSection number={12} title="Data Visualization">
+          <BodyText className="mb-6 max-w-[1000px]">
+            Lightweight, SVG-based data primitives for metrics, trends, and ratings.
+            All components reference CSS variables for color — they adapt automatically
+            across white, dark, and yellow modes without props.
           </BodyText>
-          <GridSection columns={3} className="mb-12">
-            <div className="text-center">
-              <HoverCard lift="sm">
-                <StatCard value="SM" label="Lift -4px" className="border-2" />
-              </HoverCard>
-              <TechCode size="sm" className="mt-3">lift="sm"</TechCode>
+
+          <Eyebrow className="mb-6">Progress Ring</Eyebrow>
+          <BodyText size="sm" className="mb-4">
+            Circular progress indicator. Auto-colors: primary at 80%+, muted below.
+          </BodyText>
+          <div className="flex items-center gap-8 mb-16">
+            <ProgressRing value={25} size={64} strokeWidth={5} />
+            <ProgressRing value={50} size={64} strokeWidth={5} />
+            <ProgressRing value={75} size={64} strokeWidth={5} />
+            <ProgressRing value={92} size={64} strokeWidth={5} />
+            <ProgressRing value={100} size={64} strokeWidth={5} />
+          </div>
+
+          <Eyebrow className="mb-6">Animated Counter</Eyebrow>
+          <BodyText size="sm" className="mb-4">
+            Spring-animated number that counts up on mount.
+          </BodyText>
+          <ReplayWrapper>
+            <div
+              className="flex items-baseline gap-12 text-[56px]"
+              style={{ fontFamily: "var(--font-heading)", color: "var(--color-text-primary)" }}
+            >
+              <AnimatedCounter value={2400} prefix="$" suffix="M" />
+              <AnimatedCounter value={99} suffix="%" />
+              <AnimatedCounter value={150} suffix="+" />
             </div>
-            <div className="text-center">
-              <HoverCard lift="md">
-                <StatCard value="MD" label="Lift -8px" className="border-2" />
-              </HoverCard>
-              <TechCode size="sm" className="mt-3">lift="md"</TechCode>
+          </ReplayWrapper>
+
+          <Divider thickness="thin" className="my-12" />
+
+          <Eyebrow className="mb-6">Trend Indicator</Eyebrow>
+          <BodyText size="sm" className="mb-4">
+            Directional arrows with optional value label. Three states: up, down, flat.
+          </BodyText>
+          <div className="flex items-center gap-10 mb-16">
+            <div className="flex items-center gap-3">
+              <TrendIndicator trend="up" value="+12%" size="lg" />
+              <Label>Revenue</Label>
             </div>
-            <div className="text-center">
-              <HoverCard lift="lg">
-                <StatCard value="LG" label="Lift -12px" className="border-2" />
-              </HoverCard>
-              <TechCode size="sm" className="mt-3">lift="lg"</TechCode>
+            <div className="flex items-center gap-3">
+              <TrendIndicator trend="down" value="-3%" size="lg" />
+              <Label>Churn</Label>
             </div>
+            <div className="flex items-center gap-3">
+              <TrendIndicator trend="flat" value="0%" size="lg" />
+              <Label>Burn Rate</Label>
+            </div>
+          </div>
+
+          <Eyebrow className="mb-6">Sparkline</Eyebrow>
+          <BodyText size="sm" className="mb-4">
+            Inline trend line. Auto-colors based on trend direction (up = primary, down = muted).
+          </BodyText>
+          <div className="flex items-center gap-12 mb-16">
+            <div className="flex items-center gap-4">
+              <Sparkline data={[10, 14, 8, 22, 18, 30, 28, 35]} width={120} height={32} />
+              <Label>Growth</Label>
+            </div>
+            <div className="flex items-center gap-4">
+              <Sparkline data={[40, 35, 28, 30, 22, 18, 14, 10]} width={120} height={32} />
+              <Label>Decline</Label>
+            </div>
+            <div className="flex items-center gap-4">
+              <Sparkline data={[20, 22, 18, 24, 20, 26, 22, 24]} width={120} height={32} />
+              <Label>Stable</Label>
+            </div>
+          </div>
+
+          <Eyebrow className="mb-6">Harvey Ball & Magnitude Bar</Eyebrow>
+          <BodyText size="sm" className="mb-4">
+            Discrete rating indicators. Harvey balls show 0-4 quarter fills. Magnitude bars show 0-N segments.
+          </BodyText>
+          <div className="flex items-start gap-16">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                {([0, 1, 2, 3, 4] as const).map((r) => (
+                  <HarveyBall key={r} rating={r} size={32} />
+                ))}
+              </div>
+              <Label>Harvey Ball — 0 through 4</Label>
+            </div>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3">
+                <MagnitudeBar value={1} max={5} />
+                <MagnitudeBar value={3} max={5} />
+                <MagnitudeBar value={5} max={5} />
+              </div>
+              <Label>Magnitude Bar — 1, 3, 5 of 5</Label>
+            </div>
+          </div>
+        </BriefSection>
+      </SlideContainer>
+
+      {/* 13 — Tabs & Carousels */}
+      <SlideContainer mode="white" className="h-auto min-h-[1080px]">
+        <BriefSection number={13} title="Tabs & Carousels">
+          <BodyText className="mb-6 max-w-[1000px]">
+            Content switchers for multi-panel layouts. Tabs use a persistent underline indicator
+            with AnimatePresence transitions. QuoteCarousel auto-rotates with a dot pagination
+            track.
+          </BodyText>
+
+          <Eyebrow className="mb-6">Tabs</Eyebrow>
+          <Tabs
+            items={[
+              {
+                label: "Overview",
+                content: (
+                  <div className="space-y-4">
+                    <SectionHeader className="text-[36px]">Product Overview</SectionHeader>
+                    <BodyText>
+                      The core platform serves as the foundation for all downstream features.
+                      Built on a modular architecture that scales horizontally.
+                    </BodyText>
+                  </div>
+                ),
+              },
+              {
+                label: "Metrics",
+                content: (
+                  <div className="flex gap-8">
+                    <StatCard value="99.9%" label="SLA" className="border-2" />
+                    <StatCard value="<10ms" label="P99 Latency" className="border-2" />
+                    <StatCard value="50M+" label="Daily Events" className="border-2" />
+                  </div>
+                ),
+              },
+              {
+                label: "Roadmap",
+                content: (
+                  <div className="space-y-3">
+                    <ListItem number={1}>Q1 — Core infrastructure rebuild</ListItem>
+                    <ListItem number={2}>Q2 — API v2 launch</ListItem>
+                    <ListItem number={3}>Q3 — Enterprise tier</ListItem>
+                    <ListItem number={4}>Q4 — International expansion</ListItem>
+                  </div>
+                ),
+              },
+            ]}
+            className="mb-16"
+          />
+
+          <Divider thickness="thin" className="my-12" />
+
+          <Eyebrow className="mb-6">Quote Carousel</Eyebrow>
+          <BodyText size="sm" className="mb-4">
+            Auto-rotating quotes with dot navigation. 5s interval by default.
+          </BodyText>
+          <QuoteCarousel
+            quotes={[
+              { text: "This changed how we think about performance.", attribution: "VP Engineering, Acme Corp" },
+              { text: "The precision of the system is remarkable.", attribution: "CTO, TechStart" },
+              { text: "We shipped 3x faster after adopting the platform.", attribution: "Lead Developer, ScaleUp" },
+            ]}
+          />
+        </BriefSection>
+      </SlideContainer>
+
+      {/* 14 — Effects & Utilities */}
+      <SlideContainer mode="white" className="h-auto min-h-[1080px]">
+        <BriefSection number={14} title="Effects & Utilities">
+          <BodyText className="mb-6 max-w-[1000px]">
+            Decorative effects and utility components for polish. ShineBorder adds a
+            mouse-tracking glow. PulseRing draws attention to live indicators. Tooltips
+            surface context on hover. Skeleton blocks hold layout during loading.
+          </BodyText>
+
+          <Eyebrow className="mb-6">Shine Border</Eyebrow>
+          <BodyText size="sm" className="mb-4">
+            Mouse-tracking radial glow border. Move your cursor over the cards.
+          </BodyText>
+          <GridSection columns={2} className="mb-16">
+            <ShineBorder>
+              <FeatureCard
+                icon={<IndustrialIcon symbol="star" size="lg" />}
+                title="Shine Effect"
+                description="Radial gradient follows cursor along the border edge."
+                className="border-2"
+              />
+            </ShineBorder>
+            <ShineBorder color="var(--color-text-primary)">
+              <FeatureCard
+                icon={<IndustrialIcon symbol="cross" size="lg" />}
+                title="Custom Color"
+                description="Pass any CSS color to customize the glow."
+                className="border-2"
+              />
+            </ShineBorder>
           </GridSection>
+
+          <Eyebrow className="mb-6">Pulse Ring</Eyebrow>
+          <BodyText size="sm" className="mb-4">
+            Animated expanding ring for live status indicators.
+          </BodyText>
+          <div className="flex items-center gap-12 mb-16">
+            <div className="flex items-center gap-4">
+              <PulseRing size={24} />
+              <Label>Default</Label>
+            </div>
+            <div className="flex items-center gap-4">
+              <PulseRing size={32} color="var(--color-yellow)" />
+              <Label>Yellow accent</Label>
+            </div>
+            <div className="flex items-center gap-4">
+              <PulseRing size={40} />
+              <Label>Large</Label>
+            </div>
+          </div>
+
+          <Eyebrow className="mb-6">Tooltip</Eyebrow>
+          <BodyText size="sm" className="mb-4">
+            Hover-triggered context labels. Top or bottom positioning.
+          </BodyText>
+          <div className="flex items-center gap-12 mb-16">
+            <Tooltip content="Default — top position">
+              <div
+                className="px-6 py-3 cursor-pointer"
+                style={{
+                  border: "2px solid var(--color-border)",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "16px",
+                  color: "var(--color-text-primary)",
+                }}
+              >
+                Hover me (top)
+              </div>
+            </Tooltip>
+            <Tooltip content="Bottom position" position="bottom">
+              <div
+                className="px-6 py-3 cursor-pointer"
+                style={{
+                  border: "2px solid var(--color-border)",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "16px",
+                  color: "var(--color-text-primary)",
+                }}
+              >
+                Hover me (bottom)
+              </div>
+            </Tooltip>
+          </div>
+
+          <Eyebrow className="mb-6">Skeleton Block</Eyebrow>
+          <BodyText size="sm" className="mb-4">
+            Pulsing placeholder for loading states.
+          </BodyText>
+          <div className="flex flex-col gap-3 max-w-[600px]">
+            <SkeletonBlock height={40} width="60%" />
+            <SkeletonBlock height={20} />
+            <SkeletonBlock height={20} width="80%" />
+            <div className="flex gap-3 mt-2">
+              <SkeletonBlock height={100} />
+              <SkeletonBlock height={100} />
+              <SkeletonBlock height={100} />
+            </div>
+          </div>
         </BriefSection>
       </SlideContainer>
 

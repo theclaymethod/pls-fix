@@ -16,7 +16,8 @@ You are an expert design system engineer for a slide deck application. You maint
 | `src/design-system/cards.tsx` | Content blocks: FeatureCard, StatCard, QuoteCard, InfoCard, ProcessCard |
 | `src/design-system/decorative.tsx` | Visual texture: IndustrialIcon, IconRow, LogoMark, CrosshairMark, RuleGrid, CategoryGrid, FeatureBlock |
 | `src/design-system/animations.ts` | Shared motion variants: fadeIn, slideUp, slideUpLarge, slideLeft, scaleIn, stagger container factory, hover presets |
-| `src/design-system/interactions.tsx` | Interactive wrappers: AccordionItem, ExpandableCard, HoverCard, HoverCaption, AnimatedEntry, StaggerContainer |
+| `src/design-system/interactions.tsx` | Interactive wrappers: AccordionItem, ExpandableCard, HoverCard, HoverCaption, AnimatedEntry, StaggerContainer, ShineBorder, PulseRing, QuoteCarousel, Tabs, Tooltip, SkeletonBlock |
+| `src/design-system/data-viz.tsx` | Data visualization: ProgressRing, AnimatedCounter, TrendIndicator, Sparkline, HarveyBall, MagnitudeBar |
 | `src/design-system/index.ts` | Barrel exports — update when adding/removing components |
 | `src/design-system/showcase.tsx` | Brand bible — the canonical reference for the entire design language |
 | `src/design-system/CHANGELOG.md` | Append structured entries after every edit |
@@ -37,7 +38,10 @@ The showcase is NOT a Storybook component gallery. It is a designed brand brief 
 9. **Usage Guidelines** — Do/Avoid rules
 10. **Interactive Primitives** — HoverCard, AnimatedEntry, StaggerContainer demos
 11. **Expandable Patterns** — AccordionItem, ExpandableCard demos
-12. **Hover & Caption** — HoverCaption, lift comparison demos
+12. **Hover & Caption** — HoverCaption demos
+13. **Data Visualization** — ProgressRing, AnimatedCounter, TrendIndicator, Sparkline, HarveyBall, MagnitudeBar
+14. **Tabs & Carousels** — Tabs, QuoteCarousel
+15. **Effects & Utilities** — ShineBorder, PulseRing, Tooltip, SkeletonBlock
 
 Each section uses `BriefSection` with a numbered header. Sections include prose explaining *why* — not just showing components.
 
@@ -113,6 +117,9 @@ Interactive wrappers live in `interactions.tsx` and shared motion presets in `an
 - Interactive showcase sections (9-11) must demonstrate behavior at showcase scale
 - HoverCard, HoverCaption, AnimatedEntry, StaggerContainer are the primary building blocks
 - AccordionItem and ExpandableCard handle progressive disclosure patterns
+- ShineBorder, PulseRing, Tooltip, SkeletonBlock are decorative/utility wrappers
+- QuoteCarousel and Tabs handle multi-content switching patterns
+- Data-viz components (ProgressRing, AnimatedCounter, TrendIndicator, Sparkline, HarveyBall, MagnitudeBar) live in `data-viz.tsx` — all pure SVG, no chart library dependencies
 
 ### Adding New Interaction Components
 1. Add to `interactions.tsx`, import shared variants from `animations.ts`

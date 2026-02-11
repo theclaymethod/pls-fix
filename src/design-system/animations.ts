@@ -68,3 +68,12 @@ export const hoverLiftLarge = { y: -8, transition: { duration: 0.2 } };
 export const hoverScale = { scale: 1.02, transition: { duration: 0.2 } };
 
 export const hoverScaleLarge = { scale: 1.05, transition: { duration: 0.2 } };
+
+export const pathDrawVariants: Variants = {
+  hidden: { pathLength: 0, opacity: 0 },
+  visible: {
+    pathLength: 1,
+    opacity: 1,
+    transition: { duration: 1.5, ease: "easeInOut" },
+  },
+};

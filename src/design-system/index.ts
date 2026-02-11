@@ -9,7 +9,22 @@ export {
   HoverCaption,
   AnimatedEntry,
   StaggerContainer,
+  ShineBorder,
+  PulseRing,
+  QuoteCarousel,
+  Tabs,
+  Tooltip,
+  SkeletonBlock,
 } from "./interactions";
+
+export {
+  ProgressRing,
+  AnimatedCounter,
+  TrendIndicator,
+  Sparkline,
+  HarveyBall,
+  MagnitudeBar,
+} from "./data-viz";
 
 export {
   HeroTitle,

@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import type { GenerationStatus, ChatMessage, GrabbedContext } from "../types";
 import { SlidePicker } from "./slide-picker";
@@ -47,7 +48,26 @@ export function EditSidebar({
           isResizing ? "bg-indigo-400" : "hover:bg-neutral-300"
         )}
       />
-      <SlidePicker selectedFileKey={selectedFileKey} />
+      {selectedFileKey === "design-system" ? (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+              Design System
+            </h3>
+            <Link
+              to="/builder"
+              className="text-xs text-neutral-500 hover:text-neutral-800 transition-colors"
+            >
+              All Slides
+            </Link>
+          </div>
+          <p className="text-sm text-neutral-600">
+            Edit typography, layout, cards, and decorative components.
+          </p>
+        </div>
+      ) : (
+        <SlidePicker selectedFileKey={selectedFileKey} />
+      )}
 
       <hr className="border-neutral-100 my-4" />
 

@@ -1,5 +1,3 @@
-import { TEMPLATES } from "../types";
-
 interface PromptPanelProps {
   layoutPrompt: string;
   contentPrompt: string;
@@ -67,19 +65,16 @@ export function PromptPanel({
       </div>
 
       <div>
-        <label className="text-xs text-neutral-500 block mb-1">Template</label>
-        <select
+        <label className="text-xs text-neutral-500 block mb-1">
+          Reference components (optional)
+        </label>
+        <input
+          type="text"
           value={templateHint}
           onChange={(e) => onTemplateHintChange(e.target.value)}
+          placeholder="e.g., StatCard, TwoColumnLayout"
           className="w-full px-2 py-1.5 border border-neutral-200 rounded text-sm bg-white focus:border-neutral-400 outline-none"
-        >
-          <option value="">Auto (best match)</option>
-          {TEMPLATES.map((t) => (
-            <option key={t} value={t}>
-              {t.replace("Template", "")}
-            </option>
-          ))}
-        </select>
+        />
       </div>
 
       <div>

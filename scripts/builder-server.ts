@@ -208,6 +208,161 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "POST" && req.url === "/api/edit-design-system") {
+    log("edit-ds", "request received");
+    try {
+      const body = JSON.parse(await readBody(req));
+      const { prompt, sessionId } = body as {
+        prompt: string;
+        sessionId?: string;
+      };
+
+      if (!prompt) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "prompt is required" }));
+        return;
+      }
+
+      log("edit-ds", `prompt: "${prompt.slice(0, 80)}..." session=${sessionId ?? "new"}`);
+
+      const fullPrompt = sessionId
+        ? prompt
+        : `You are editing the design system for a slide deck.\n\nDesign system files:\n- src/design-system/typography.tsx\n- src/design-system/layout.tsx\n- src/design-system/cards.tsx\n- src/design-system/decorative.tsx\n- src/design-system/index.ts\n- src/design-system/showcase.tsx\n- src/deck/theme.css\n\nAfter making changes, append a structured entry to src/design-system/CHANGELOG.md with the date and a summary of what changed.\n\n${prompt}`;
+
+      const args = sessionId
+        ? ["--resume", sessionId, "-p", fullPrompt, "--verbose", "--output-format", "stream-json", "--dangerously-skip-permissions"]
+        : ["-p", fullPrompt, "--verbose", "--output-format", "stream-json", "--dangerously-skip-permissions"];
+
+      log("edit-ds", `claude args: ${args.join(" ")}`);
+
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      });
+
+      const claude = spawn("claude", args, { cwd: PROJECT_ROOT, stdio: ["ignore", "pipe", "pipe"] });
+
+      streamClaude(claude, req, res, "edit-ds", true);
+    } catch (err) {
+      log("edit-ds", `error: ${err}`);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" })
+      );
+    }
+    return;
+  }
+
+  if (req.method === "POST" && req.url === "/api/apply-design-system") {
+    log("apply-ds", "request received");
+    try {
+      const body = JSON.parse(await readBody(req));
+      const { fileKey } = body as { fileKey: string };
+
+      if (!fileKey) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "fileKey is required" }));
+        return;
+      }
+
+      log("apply-ds", `fileKey: ${fileKey}`);
+
+      const prompt = `Read src/deck/slides/${fileKey}.tsx. Understand its semantic intent.\nRead src/design-system/ files and src/design-system/CHANGELOG.md.\nRead the recent design system changes: run \`git diff HEAD~10 -- src/design-system/ src/deck/theme.css\`\nRewrite the slide using current design system primitives from @/design-system.\nDo NOT use templates from @/templates.\nPreserve the slide's semantic content and intent.`;
+
+      const args = ["-p", prompt, "--verbose", "--output-format", "stream-json", "--dangerously-skip-permissions"];
+
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      });
+
+      const claude = spawn("claude", args, { cwd: PROJECT_ROOT, stdio: ["ignore", "pipe", "pipe"] });
+
+      streamClaude(claude, req, res, "apply-ds");
+    } catch (err) {
+      log("apply-ds", `error: ${err}`);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" })
+      );
+    }
+    return;
+  }
+
+  if (req.method === "POST" && req.url === "/api/create-design-system") {
+    log("create-ds", "request received");
+    try {
+      const body = JSON.parse(await readBody(req));
+      const { description, urls, images, planOnly } = body as {
+        description: string;
+        urls?: string[];
+        images?: string[];
+        planOnly?: boolean;
+      };
+
+      if (!description) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "description is required" }));
+        return;
+      }
+
+      log("create-ds", `desc: "${description.slice(0, 80)}..." planOnly=${planOnly ?? false}`);
+
+      let imageFiles: string[] = [];
+      if (images && images.length > 0) {
+        mkdirSync(WIREFRAME_DIR, { recursive: true });
+        imageFiles = images.map((img, i) => {
+          const path = resolve(WIREFRAME_DIR, `ds-ref-${i}.png`);
+          const base64 = img.startsWith("data:") ? img.replace(/^data:[^;]+;base64,/, "") : img;
+          writeFileSync(path, Buffer.from(base64, "base64"));
+          return path;
+        });
+      }
+
+      const promptParts = [
+        "Use careful analysis. Show your design reasoning before generating code.",
+        "",
+        `Description: ${description}`,
+      ];
+
+      if (urls && urls.length > 0) {
+        promptParts.push("", "Reference URLs:", ...urls.map((u) => `- ${u}`));
+      }
+
+      if (imageFiles.length > 0) {
+        promptParts.push("", "Reference images saved at:", ...imageFiles.map((f) => `- ${f}`));
+        promptParts.push("Read these images to analyze the visual style.");
+      }
+
+      if (planOnly) {
+        promptParts.push("", "IMPORTANT: Only analyze and produce a design plan. Do NOT write any files yet. Output a structured plan with design decisions for: color palette, typography scale, component styles, and overall aesthetic.");
+      } else {
+        promptParts.push("", "Regenerate all design system files:", "- src/design-system/typography.tsx", "- src/design-system/layout.tsx", "- src/design-system/cards.tsx", "- src/design-system/decorative.tsx", "- src/design-system/index.ts", "- src/design-system/showcase.tsx", "- src/deck/theme.css", "", "Update src/design-system/CHANGELOG.md with a summary of the new design system.");
+      }
+
+      const args = ["-p", promptParts.join("\n"), "--verbose", "--output-format", "stream-json", "--dangerously-skip-permissions"];
+
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      });
+
+      const claude = spawn("claude", args, { cwd: PROJECT_ROOT, stdio: ["ignore", "pipe", "pipe"] });
+
+      streamClaude(claude, req, res, "create-ds", true);
+    } catch (err) {
+      log("create-ds", `error: ${err}`);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" })
+      );
+    }
+    return;
+  }
+
   log("404", `${req.method} ${req.url}`);
   res.writeHead(404, { "Content-Type": "application/json" });
   res.end(JSON.stringify({ error: "Not found" }));

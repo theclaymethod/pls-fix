@@ -26,13 +26,18 @@ export function buildPrompt(input: PromptInput): string {
   if (input.templateHint) {
     parts.push("");
     parts.push(
-      `Use the ${input.templateHint} template as a starting point, but adapt freely if the content/layout calls for it.`
+      `Reference these design system components if useful: ${input.templateHint}`
     );
   }
 
+  parts.push("");
+  parts.push(
+    "Compose from @/design-system primitives. Do not use @/templates."
+  );
+
   if (input.boxes.length > 0) {
     parts.push("");
-    parts.push("Layout wireframe (1920x1080):");
+    parts.push("Rough layout sketch (1920x1080) — approximate positions only, not a pixel-perfect reference:");
     for (const box of input.boxes) {
       parts.push(
         `- "${box.label}" (${box.type}): x=${box.x}, y=${box.y}, w=${box.width}, h=${box.height}`

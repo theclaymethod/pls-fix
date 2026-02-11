@@ -39,30 +39,6 @@ export const BOX_TYPE_COLORS: Record<BoxType, string> = {
   generic: "#6b7280",
 };
 
-export const TEMPLATES = [
-  "TitleTemplate",
-  "HeroTemplate",
-  "SplitContentTemplate",
-  "TwoColumnTemplate",
-  "StatCardsTemplate",
-  "QuoteTemplate",
-  "BigNumberTemplate",
-  "FeatureGridTemplate",
-  "IconGridTemplate",
-  "TimelineTemplate",
-  "ComparisonTableTemplate",
-  "BeforeAfterTemplate",
-  "DiagramTemplate",
-  "FullscreenImageTemplate",
-  "PhotoGridTemplate",
-  "PhoneMockupTemplate",
-  "BrowserMockupTemplate",
-  "TeamTemplate",
-  "LogoCloudTemplate",
-  "StackedCardsTemplate",
-  "ThreeUpTemplate",
-] as const;
-
 export const MIN_BOX_WIDTH = 100;
 export const MIN_BOX_HEIGHT = 60;
 

@@ -245,6 +245,46 @@ export function useGeneration() {
     [streamRequest]
   );
 
+  const editDesignSystem = useCallback(
+    async (
+      prompt: string,
+      sessionId: string | null,
+      onSession: (sessionId: string) => void
+    ) => {
+      await streamRequest(
+        `${SERVER_URL}/api/edit-design-system`,
+        { prompt, sessionId },
+        onSession
+      );
+    },
+    [streamRequest]
+  );
+
+  const applyDesignSystem = useCallback(
+    async (fileKey: string, onSession?: (sessionId: string) => void) => {
+      await streamRequest(
+        `${SERVER_URL}/api/apply-design-system`,
+        { fileKey },
+        onSession
+      );
+    },
+    [streamRequest]
+  );
+
+  const createDesignSystem = useCallback(
+    async (
+      body: { description: string; urls?: string[]; images?: string[]; planOnly?: boolean },
+      onSession?: (sessionId: string) => void
+    ) => {
+      await streamRequest(
+        `${SERVER_URL}/api/create-design-system`,
+        body,
+        onSession
+      );
+    },
+    [streamRequest]
+  );
+
   const cancel = useCallback(() => {
     abortRef.current?.abort();
     setState((s) => ({
@@ -253,5 +293,5 @@ export function useGeneration() {
     }));
   }, []);
 
-  return { ...state, generate, edit, cancel };
+  return { ...state, generate, edit, editDesignSystem, applyDesignSystem, createDesignSystem, cancel };
 }

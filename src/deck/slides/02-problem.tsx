@@ -1,6 +1,6 @@
 import { BeforeAfterTemplate } from "@/templates";
 
-export function Slide03Problem() {
+export function Slide02Problem() {
   return (
     <BeforeAfterTemplate
       beforeEyebrow="THE CHALLENGE"

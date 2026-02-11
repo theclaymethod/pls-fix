@@ -11,6 +11,16 @@ const WIREFRAME_DIR = resolve(PROJECT_ROOT, ".builder-tmp");
 const WIREFRAME_PATH = resolve(WIREFRAME_DIR, "wireframe.png");
 const ASSETS_DIR = resolve(PROJECT_ROOT, "public/assets");
 
+const POST_CHANGE_INSTRUCTIONS = [
+  "",
+  "## After Making Changes (MANDATORY)",
+  "After ALL file modifications are complete and `pnpm build` passes:",
+  "1. Stage the changed files with `git add` (specific files, not -A)",
+  "2. Commit with a descriptive message summarizing what changed (include the user's high-level intent)",
+  "3. Push to remote: `git push`",
+  "Do NOT skip any of these steps. Every change must be committed and pushed.",
+].join("\n");
+
 function log(tag: string, ...args: unknown[]): void {
   console.log(`[${new Date().toISOString().slice(11, 19)}] [${tag}]`, ...args);
 }
@@ -141,7 +151,7 @@ const server = createServer(async (req, res) => {
 
       const claude = spawn(
         "claude",
-        ["-p", prompt, "--verbose", "--output-format", "stream-json", "--dangerously-skip-permissions"],
+        ["-p", prompt + POST_CHANGE_INSTRUCTIONS, "--verbose", "--output-format", "stream-json", "--dangerously-skip-permissions"],
         { cwd: PROJECT_ROOT, stdio: ["ignore", "pipe", "pipe"] }
       );
 
@@ -182,7 +192,7 @@ const server = createServer(async (req, res) => {
 
       const fullPrompt = sessionId
         ? prompt
-        : `Edit the slide at ${filePath}.\n\n${prompt}`;
+        : `Edit the slide at ${filePath}.\n\n${prompt}${POST_CHANGE_INSTRUCTIONS}`;
 
       const args = sessionId
         ? ["--resume", sessionId, "-p", fullPrompt, "--verbose", "--output-format", "stream-json", "--dangerously-skip-permissions"]
@@ -228,7 +238,7 @@ const server = createServer(async (req, res) => {
 
       const fullPrompt = sessionId
         ? prompt
-        : `You are editing the design system for a slide deck.\n\nDesign system files:\n- src/design-system/typography.tsx\n- src/design-system/layout.tsx\n- src/design-system/cards.tsx\n- src/design-system/decorative.tsx\n- src/design-system/index.ts\n- src/design-system/showcase.tsx\n- src/deck/theme.css\n\nAfter making changes, append a structured entry to src/design-system/CHANGELOG.md with the date and a summary of what changed.\n\n${prompt}`;
+        : `You are editing the design system for a slide deck.\n\nDesign system files:\n- src/design-system/typography.tsx\n- src/design-system/layout.tsx\n- src/design-system/cards.tsx\n- src/design-system/decorative.tsx\n- src/design-system/index.ts\n- src/design-system/showcase.tsx\n- src/deck/theme.css\n\nAfter making changes, append a structured entry to src/design-system/CHANGELOG.md with the date and a summary of what changed.\n\n${prompt}${POST_CHANGE_INSTRUCTIONS}`;
 
       const args = sessionId
         ? ["--resume", sessionId, "-p", fullPrompt, "--verbose", "--output-format", "stream-json", "--dangerously-skip-permissions"]
@@ -269,7 +279,7 @@ const server = createServer(async (req, res) => {
 
       log("apply-ds", `fileKey: ${fileKey}`);
 
-      const prompt = `Read src/deck/slides/${fileKey}.tsx. Understand its semantic intent.\nRead src/design-system/ files and src/design-system/CHANGELOG.md.\nRead the recent design system changes: run \`git diff HEAD~10 -- src/design-system/ src/deck/theme.css\`\nRewrite the slide using current design system primitives from @/design-system.\nDo NOT use templates from @/templates.\nPreserve the slide's semantic content and intent.`;
+      const prompt = `Read src/deck/slides/${fileKey}.tsx. Understand its semantic intent.\nRead src/design-system/ files and src/design-system/CHANGELOG.md.\nRead the recent design system changes: run \`git diff HEAD~10 -- src/design-system/ src/deck/theme.css\`\nRewrite the slide using current design system primitives from @/design-system.\nDo NOT use templates from @/templates.\nPreserve the slide's semantic content and intent.${POST_CHANGE_INSTRUCTIONS}`;
 
       const args = ["-p", prompt, "--verbose", "--output-format", "stream-json", "--dangerously-skip-permissions"];
 
@@ -343,7 +353,7 @@ const server = createServer(async (req, res) => {
       if (planOnly) {
         promptParts.push("", "IMPORTANT: Only analyze and produce a design plan. Do NOT write any files yet. Output a structured plan with design decisions for: color palette, typography scale, component styles, and overall aesthetic.");
       } else {
-        promptParts.push("", "Regenerate all design system files:", "- src/design-system/typography.tsx", "- src/design-system/layout.tsx", "- src/design-system/cards.tsx", "- src/design-system/decorative.tsx", "- src/design-system/index.ts", "- src/design-system/showcase.tsx", "- src/deck/theme.css", "", "Update src/design-system/CHANGELOG.md with a summary of the new design system.");
+        promptParts.push("", "Regenerate all design system files:", "- src/design-system/typography.tsx", "- src/design-system/layout.tsx", "- src/design-system/cards.tsx", "- src/design-system/decorative.tsx", "- src/design-system/index.ts", "- src/design-system/showcase.tsx", "- src/deck/theme.css", "", "Update src/design-system/CHANGELOG.md with a summary of the new design system.", POST_CHANGE_INSTRUCTIONS);
       }
 
       const args = ["-p", promptParts.join("\n"), "--verbose", "--output-format", "stream-json", "--dangerously-skip-permissions"];
@@ -595,6 +605,100 @@ const server = createServer(async (req, res) => {
       log("assess-ds", `error: ${err}`);
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }));
+    }
+    return;
+  }
+
+  if (req.method === "POST" && req.url === "/api/deck-chat") {
+    log("deck-chat", "request received");
+    try {
+      const body = JSON.parse(await readBody(req));
+      const { prompt, sessionId } = body as {
+        prompt: string;
+        sessionId?: string;
+      };
+
+      if (!prompt) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "prompt is required" }));
+        return;
+      }
+
+      log("deck-chat", `prompt: "${prompt.slice(0, 80)}..." session=${sessionId ?? "new"}`);
+
+      const configPath = resolve(PROJECT_ROOT, "src/deck/config.ts");
+      let deckStructure = "";
+      try {
+        const configContent = readFileSync(configPath, "utf-8");
+        const entryRegex = /\{\s*id:\s*"([^"]+)",\s*fileKey:\s*"([^"]+)",\s*title:\s*"([^"]+)",\s*shortTitle:\s*"([^"]+)"\s*\}/g;
+        const entries: string[] = [];
+        let match: RegExpExecArray | null;
+        let pos = 1;
+        while ((match = entryRegex.exec(configContent)) !== null) {
+          entries.push(`${String(pos).padStart(2, "0")}. ${match[2]} — "${match[3]}" (id: ${match[1]}, short: "${match[4]}")`);
+          pos++;
+        }
+        deckStructure = entries.join("\n");
+      } catch {
+        deckStructure = "(Could not read config.ts)";
+      }
+
+      const systemContext = [
+        "You are a deck management assistant. You help reorganize slide decks by reordering, deleting, duplicating, renaming, adding slides, and editing slide metadata.",
+        "",
+        "## Current Deck Structure",
+        deckStructure,
+        "",
+        "## Available Operations",
+        "- **Reorder**: Move a slide to a new position. Renumber all affected files and update config.ts.",
+        "- **Delete**: Remove a slide file and renumber remaining slides. ALWAYS ask for confirmation before deleting.",
+        "- **Duplicate**: Copy a slide file to a new position with a new name.",
+        "- **Rename**: Change a slide's file name, export name, id, title, and/or shortTitle.",
+        "- **Add**: Create a new slide at a given position from a template or design system primitives.",
+        "- **Metadata edit**: Update title, shortTitle, or id in config.ts without changing the slide file.",
+        "",
+        "## Behavior Rules",
+        "1. ALWAYS describe what you will do BEFORE doing it. Wait for user confirmation.",
+        "2. For DELETE operations, ALWAYS ask for explicit confirmation. Say 'This cannot be undone.'",
+        "3. After making changes, describe what changed.",
+        "4. When reordering or deleting, you must rename all affected slide files, update their export names, and update config.ts (both slideLoaders and SLIDE_CONFIG_INTERNAL).",
+        "",
+        "## File Conventions",
+        "- Slide files: src/deck/slides/NN-kebab-case.tsx",
+        "- Export names: SlideNNCamelCase",
+        "- Config: src/deck/config.ts (slideLoaders map + SLIDE_CONFIG_INTERNAL array)",
+        "",
+        "## Important",
+        "- Always run `pnpm build` after changes to verify nothing is broken.",
+        "- Reference slides by their position number or title. The user sees them in a grid.",
+        POST_CHANGE_INSTRUCTIONS,
+      ].join("\n");
+
+      const fullPrompt = sessionId
+        ? prompt
+        : `${systemContext}\n\n---\n\nUser request: ${prompt}`;
+
+      const args = sessionId
+        ? ["--resume", sessionId, "-p", fullPrompt, "--verbose", "--output-format", "stream-json", "--dangerously-skip-permissions"]
+        : ["-p", fullPrompt, "--verbose", "--output-format", "stream-json", "--dangerously-skip-permissions"];
+
+      log("deck-chat", `claude args: ${args.join(" ").slice(0, 200)}...`);
+
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      });
+
+      const claude = spawn("claude", args, { cwd: PROJECT_ROOT, stdio: ["ignore", "pipe", "pipe"] });
+
+      streamClaude(claude, req, res, "deck-chat", true);
+    } catch (err) {
+      log("deck-chat", `error: ${err}`);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" })
+      );
     }
     return;
   }

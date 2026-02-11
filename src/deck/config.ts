@@ -14,10 +14,10 @@ export interface SlideConfig {
 const slideLoaders: Record<string, () => Promise<{ default: ComponentType }>> = {
   "01-title": () =>
     import("./slides/01-title").then((m) => ({ default: m.Slide01Title })),
-  "02-intro": () =>
-    import("./slides/02-intro").then((m) => ({ default: m.Slide02Intro })),
-  "03-problem": () =>
-    import("./slides/03-problem").then((m) => ({ default: m.Slide03Problem })),
+  "02-problem": () =>
+    import("./slides/02-problem").then((m) => ({ default: m.Slide02Problem })),
+  "03-intro": () =>
+    import("./slides/03-intro").then((m) => ({ default: m.Slide03Intro })),
   "04-features": () =>
     import("./slides/04-features").then((m) => ({ default: m.Slide04Features })),
   "05-stats": () =>
@@ -101,8 +101,8 @@ function getComponent(fileKey: string): ComponentType {
 
 const SLIDE_CONFIG_INTERNAL: SlideConfig[] = [
   { id: "title", fileKey: "01-title", title: "Title Slide", shortTitle: "Title" },
-  { id: "intro", fileKey: "02-intro", title: "Introduction", shortTitle: "Intro" },
-  { id: "problem", fileKey: "03-problem", title: "Before & After", shortTitle: "Problem" },
+  { id: "problem", fileKey: "02-problem", title: "Before & After", shortTitle: "Problem" },
+  { id: "intro", fileKey: "03-intro", title: "Introduction", shortTitle: "Intro" },
   { id: "features", fileKey: "04-features", title: "Key Features", shortTitle: "Features" },
   { id: "stats", fileKey: "05-stats", title: "Impact Metrics", shortTitle: "Stats" },
   { id: "timeline", fileKey: "06-timeline", title: "Project Timeline", shortTitle: "Timeline" },

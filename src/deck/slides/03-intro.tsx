@@ -1,6 +1,6 @@
 import { SplitContentTemplate } from "@/templates";
 
-export function Slide02Intro() {
+export function Slide03Intro() {
   return (
     <SplitContentTemplate
       eyebrow="Introduction"

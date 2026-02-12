@@ -7,6 +7,7 @@ import {
   FeatureCard,
   AnimatedEntry,
   StaggerContainer,
+  HoverCard,
 } from "@/design-system";
 
 const CheckIcon = () => (
@@ -46,28 +47,34 @@ export function Slide04Features() {
       <StaggerContainer stagger={0.15} delay={0.3} className="flex-1 flex items-center">
         <GridSection columns={3} gap="lg" className="w-full">
           <AnimatedEntry variant="slideUp">
-            <FeatureCard
-              icon={<CheckIcon />}
-              title="Easy Integration"
-              description="Connect with your existing tools in minutes, not hours"
-              className="border-2 border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-8"
-            />
+            <HoverCard lift="md" shadow>
+              <FeatureCard
+                icon={<CheckIcon />}
+                title="Easy Integration"
+                description="Connect with your existing tools in minutes, not hours"
+                className="border-2 border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-8"
+              />
+            </HoverCard>
           </AnimatedEntry>
           <AnimatedEntry variant="slideUp">
-            <FeatureCard
-              icon={<ChartIcon />}
-              title="Real-time Analytics"
-              description="Track performance with live dashboards and custom reports"
-              className="border-2 border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-8"
-            />
+            <HoverCard lift="md" shadow>
+              <FeatureCard
+                icon={<ChartIcon />}
+                title="Real-time Analytics"
+                description="Track performance with live dashboards and custom reports"
+                className="border-2 border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-8"
+              />
+            </HoverCard>
           </AnimatedEntry>
           <AnimatedEntry variant="slideUp">
-            <FeatureCard
-              icon={<ShieldIcon />}
-              title="Enterprise Security"
-              description="Bank-level encryption and compliance certifications"
-              className="border-2 border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-8"
-            />
+            <HoverCard lift="md" shadow>
+              <FeatureCard
+                icon={<ShieldIcon />}
+                title="Enterprise Security"
+                description="Bank-level encryption and compliance certifications"
+                className="border-2 border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-8"
+              />
+            </HoverCard>
           </AnimatedEntry>
         </GridSection>
       </StaggerContainer>

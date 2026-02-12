@@ -157,6 +157,19 @@ pnpm preview    # Preview production build
 
 Deploys to Cloudflare Workers via the deploy button or `wrangler deploy`.
 
+## Playwright / Browser Preview
+
+The dev server port is **dynamic** (supports multiple worktrees). `pnpm dev` writes the port to `.dev-ports` in the project root:
+```json
+{ "vite": 51234, "builder": 51235 }
+```
+
+**Before using Playwright MCP**, read `.dev-ports` to get the Vite port, then navigate to:
+- Presentation view: `http://localhost:{vitePort}/deck/{slideNumber}` (1-indexed)
+- Builder/editor view: `http://localhost:{vitePort}/builder/{fileKey}` (e.g., `01-title`)
+- All slides grid: `http://localhost:{vitePort}/builder`
+- Design system: `http://localhost:{vitePort}/builder/designer`
+
 ## Conventions
 
 - Slide numbers are 1-indexed and zero-padded (01, 02, ... 17)
@@ -167,4 +180,5 @@ Deploys to Cloudflare Workers via the deploy button or `wrangler deploy`.
 ## Workflow Rules
 
 - **Commit after every change.** Include the high-level user instructions in the commit message so the history is readable.
+- **Do NOT push.** Pushes are manual — the user triggers them via the git status indicator in the builder header bar.
 - **Revert on breakage.** At some point you WILL introduce a breaking change. When this happens, revert to the previous working commit rather than spending a lot of time debugging a broken path.

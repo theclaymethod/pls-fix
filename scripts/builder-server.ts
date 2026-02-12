@@ -1,5 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { spawn, type ChildProcess } from "node:child_process";
+import { spawn, execSync, type ChildProcess } from "node:child_process";
 import { resolve, dirname, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { mkdirSync, writeFileSync, readFileSync, readdirSync, statSync, unlinkSync, existsSync } from "node:fs";
@@ -11,14 +11,28 @@ const WIREFRAME_DIR = resolve(PROJECT_ROOT, ".builder-tmp");
 const WIREFRAME_PATH = resolve(WIREFRAME_DIR, "wireframe.png");
 const ASSETS_DIR = resolve(PROJECT_ROOT, "public/assets");
 
+const DESIGN_SYSTEM_INDEX = [
+  "Design system files (import from @/design-system):",
+  "- typography.tsx — Heading, Body, Label, Caption, Mono",
+  "- layout.tsx — SlideContainer, ContentStack, SplitLayout, Grid",
+  "- cards.tsx — Card, StatCard, FeatureCard, IconCard",
+  "- decorative.tsx — Divider, Badge, ShineBorder, GradientBlob",
+  "- interactions.tsx — AnimatedEntry, HoverCard, StaggerChildren",
+  "- data-viz.tsx — BarChart, ProgressRing, StatCounter",
+  "- animations.ts — motion presets and variants",
+  "- index.ts — barrel exports",
+  "- showcase.tsx — brand bible / visual showcase of all primitives",
+  "- Theme variables: src/deck/theme.css",
+].join("\n");
+
 const POST_CHANGE_INSTRUCTIONS = [
   "",
   "## After Making Changes (MANDATORY)",
   "After ALL file modifications are complete and `pnpm build` passes:",
   "1. Stage the changed files with `git add` (specific files, not -A)",
   "2. Commit with a descriptive message summarizing what changed (include the user's high-level intent)",
-  "3. Push to remote: `git push`",
-  "Do NOT skip any of these steps. Every change must be committed and pushed.",
+  "Do NOT skip any of these steps. Every change must be committed.",
+  "IMPORTANT: Do NOT run `git push`. Pushing is handled by the user via the UI.",
 ].join("\n");
 
 function log(tag: string, ...args: unknown[]): void {
@@ -190,9 +204,11 @@ const server = createServer(async (req, res) => {
 
       log("edit", `prompt: "${prompt.slice(0, 80)}..." file=${filePath} session=${sessionId ?? "new"}`);
 
+      const editContext = `Edit the slide at ${filePath}.\n\n${DESIGN_SYSTEM_INDEX}\nRead these files if you need specifics on available props or variants.`;
+
       const fullPrompt = sessionId
-        ? prompt
-        : `Edit the slide at ${filePath}.\n\n${prompt}${POST_CHANGE_INSTRUCTIONS}`;
+        ? `${prompt}${POST_CHANGE_INSTRUCTIONS}`
+        : `${editContext}\n\n${prompt}${POST_CHANGE_INSTRUCTIONS}`;
 
       const args = sessionId
         ? ["--resume", sessionId, "-p", fullPrompt, "--verbose", "--output-format", "stream-json", "--dangerously-skip-permissions"]
@@ -237,8 +253,8 @@ const server = createServer(async (req, res) => {
       log("edit-ds", `prompt: "${prompt.slice(0, 80)}..." session=${sessionId ?? "new"}`);
 
       const fullPrompt = sessionId
-        ? prompt
-        : `You are editing the design system for a slide deck.\n\nDesign system files:\n- src/design-system/typography.tsx\n- src/design-system/layout.tsx\n- src/design-system/cards.tsx\n- src/design-system/decorative.tsx\n- src/design-system/index.ts\n- src/design-system/showcase.tsx\n- src/deck/theme.css\n\nAfter making changes, append a structured entry to src/design-system/CHANGELOG.md with the date and a summary of what changed.\n\n${prompt}${POST_CHANGE_INSTRUCTIONS}`;
+        ? `${prompt}${POST_CHANGE_INSTRUCTIONS}`
+        : `You are editing the design system for a slide deck.\n\n${DESIGN_SYSTEM_INDEX}\n\nAfter making changes, append a structured entry to src/design-system/CHANGELOG.md with the date and a summary of what changed.\n\n${prompt}${POST_CHANGE_INSTRUCTIONS}`;
 
       const args = sessionId
         ? ["--resume", sessionId, "-p", fullPrompt, "--verbose", "--output-format", "stream-json", "--dangerously-skip-permissions"]
@@ -350,10 +366,12 @@ const server = createServer(async (req, res) => {
         promptParts.push("Read these images to analyze the visual style.");
       }
 
+      promptParts.push("", DESIGN_SYSTEM_INDEX);
+
       if (planOnly) {
         promptParts.push("", "IMPORTANT: Only analyze and produce a design plan. Do NOT write any files yet. Output a structured plan with design decisions for: color palette, typography scale, component styles, and overall aesthetic.");
       } else {
-        promptParts.push("", "Regenerate all design system files:", "- src/design-system/typography.tsx", "- src/design-system/layout.tsx", "- src/design-system/cards.tsx", "- src/design-system/decorative.tsx", "- src/design-system/index.ts", "- src/design-system/showcase.tsx", "- src/deck/theme.css", "", "Update src/design-system/CHANGELOG.md with a summary of the new design system.", POST_CHANGE_INSTRUCTIONS);
+        promptParts.push("", "Regenerate all design system files listed above.", "Update src/design-system/CHANGELOG.md with a summary of the new design system.", POST_CHANGE_INSTRUCTIONS);
       }
 
       const args = ["-p", promptParts.join("\n"), "--verbose", "--output-format", "stream-json", "--dangerously-skip-permissions"];
@@ -675,7 +693,7 @@ const server = createServer(async (req, res) => {
       ].join("\n");
 
       const fullPrompt = sessionId
-        ? prompt
+        ? `${prompt}${POST_CHANGE_INSTRUCTIONS}`
         : `${systemContext}\n\n---\n\nUser request: ${prompt}`;
 
       const args = sessionId
@@ -699,6 +717,59 @@ const server = createServer(async (req, res) => {
       res.end(
         JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" })
       );
+    }
+    return;
+  }
+
+  if (req.method === "GET" && req.url === "/api/git/status") {
+    log("git", "status request");
+    try {
+      const branch = execSync("git branch --show-current", { cwd: PROJECT_ROOT, encoding: "utf-8" }).trim();
+
+      let unpushedCommits: { hash: string; message: string }[] = [];
+      try {
+        const raw = execSync("git log @{u}..HEAD --oneline", { cwd: PROJECT_ROOT, encoding: "utf-8" }).trim();
+        if (raw) {
+          unpushedCommits = raw.split("\n").map((line) => {
+            const spaceIdx = line.indexOf(" ");
+            return { hash: line.slice(0, spaceIdx), message: line.slice(spaceIdx + 1) };
+          });
+        }
+      } catch {
+        // no upstream configured
+      }
+
+      const porcelain = execSync("git status --porcelain", { cwd: PROJECT_ROOT, encoding: "utf-8" }).trim();
+      const uncommittedFiles = porcelain ? porcelain.split("\n").length : 0;
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({
+        branch,
+        unpushedCount: unpushedCommits.length,
+        unpushedCommits,
+        hasUncommittedChanges: uncommittedFiles > 0,
+        uncommittedFileCount: uncommittedFiles,
+      }));
+    } catch (err) {
+      log("git", `status error: ${err}`);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }));
+    }
+    return;
+  }
+
+  if (req.method === "POST" && req.url === "/api/git/push") {
+    log("git", "push request");
+    try {
+      execSync("git push", { cwd: PROJECT_ROOT, encoding: "utf-8", timeout: 30_000 });
+      log("git", "push succeeded");
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: true }));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      log("git", `push error: ${message}`);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: message }));
     }
     return;
   }

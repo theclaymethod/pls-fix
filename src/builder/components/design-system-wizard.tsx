@@ -1,9 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { useGeneration } from "../hooks/use-generation";
 import { useAssets } from "../hooks/use-assets";
 import { AssistantContent } from "./assistant-content";
+import { GitStatusIndicator } from "./git-status-indicator";
 
 type WizardStep =
   | "references"
@@ -156,21 +157,36 @@ export function DesignSystemWizard() {
     additionalNotes.trim().length > 0;
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <div className="max-w-3xl mx-auto px-6 py-10">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-semibold text-neutral-900">
-            Create Design System
-          </h1>
-          <button
-            onClick={() => navigate({ to: "/builder" })}
-            className="text-sm text-neutral-500 hover:text-neutral-800"
-          >
-            Cancel
-          </button>
+    <div className="min-h-screen bg-neutral-50 flex flex-col">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-neutral-200 bg-white shrink-0">
+        <Link
+          to="/builder"
+          className="flex items-center gap-1.5 px-2 py-1.5 -ml-1 text-neutral-500 hover:text-neutral-800 hover:bg-neutral-100 rounded-md transition-colors"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 3L2 8l4 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M2.5 8H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+          <span className="text-xs font-medium">All Slides</span>
+        </Link>
+
+        <div className="w-px h-4 bg-neutral-200" />
+
+        <div className="flex items-center gap-1.5">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-neutral-400">
+            <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+          </svg>
+          <span className="text-sm font-medium text-neutral-900">Create Design System</span>
         </div>
 
-        <StepIndicator current={step} />
+        <div className="ml-auto flex items-center gap-3">
+          <GitStatusIndicator />
+          <StepIndicator current={step} />
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+      <div className="max-w-3xl mx-auto px-6 py-8">
 
         {/* Step 1: References */}
         {step === "references" && (
@@ -550,6 +566,7 @@ export function DesignSystemWizard() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

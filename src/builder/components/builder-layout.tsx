@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import type Konva from "konva";
 import { SLIDE_CONFIG, TOTAL_SLIDES } from "@/deck/config";
+import { AssetBrowser } from "./asset-browser";
 import { useCanvasBoxes } from "../hooks/use-canvas-boxes";
 import { usePromptGenerator } from "../hooks/use-prompt-generator";
 import { useGeneration } from "../hooks/use-generation";
@@ -18,6 +19,7 @@ import { GenerationPanel } from "./generation-panel";
 import { GenerationOutput } from "./generation-output";
 import { SlidePreview } from "./slide-preview";
 import { EditSidebar } from "./edit-sidebar";
+import { GitStatusIndicator } from "./git-status-indicator";
 
 interface BuilderLayoutProps {
   fileKey: string;
@@ -190,7 +192,33 @@ function CreateView() {
 }
 
 function EditView({ fileKey }: { fileKey: string }) {
+  const navigate = useNavigate();
   const editSlide = useMemo(() => resolveEditInfo(fileKey), [fileKey]);
+  const [assetBrowserOpen, setAssetBrowserOpen] = useState(false);
+
+  const slideIndex = useMemo(
+    () => SLIDE_CONFIG.findIndex((s) => s.fileKey === fileKey),
+    [fileKey]
+  );
+  const hasPrev = slideIndex > 0;
+  const hasNext = slideIndex >= 0 && slideIndex < SLIDE_CONFIG.length - 1;
+
+  const goToPrev = () => {
+    if (hasPrev) {
+      navigate({
+        to: "/builder/$fileKey",
+        params: { fileKey: SLIDE_CONFIG[slideIndex - 1].fileKey },
+      });
+    }
+  };
+  const goToNext = () => {
+    if (hasNext) {
+      navigate({
+        to: "/builder/$fileKey",
+        params: { fileKey: SLIDE_CONFIG[slideIndex + 1].fileKey },
+      });
+    }
+  };
 
   const sidebar = useResizable({
     defaultWidth: 320,
@@ -285,26 +313,103 @@ function EditView({ fileKey }: { fileKey: string }) {
   );
 
   return (
-    <div className="h-screen flex bg-neutral-50">
-      <SlidePreview
-        fileKey={editSlide.fileKey}
-        slideNumber={editSlide.slideNumber}
-        containerRef={previewContainerRef}
-      />
+    <div className="h-screen flex flex-col bg-neutral-50">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-neutral-200 bg-white shrink-0">
+        <Link
+          to="/builder"
+          className="flex items-center gap-1.5 px-2 py-1.5 -ml-1 text-neutral-500 hover:text-neutral-800 hover:bg-neutral-100 rounded-md transition-colors"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 3L2 8l4 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M2.5 8H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+          <span className="text-xs font-medium">All Slides</span>
+        </Link>
 
-      <EditSidebar
-        selectedFileKey={editSlide.fileKey}
-        messages={editMessages}
-        status={generation.status}
-        onSendMessage={handleSendMessage}
-        onSendWithImage={handleSendWithImage}
-        onClearHistory={clearHistory}
-        grabbedContext={grabbedContext}
-        onDismissContext={clearContext}
-        width={sidebar.width}
-        isResizing={sidebar.isResizing}
-        onResizeMouseDown={sidebar.handleMouseDown}
-      />
+        <div className="w-px h-4 bg-neutral-200" />
+
+        <div className="flex items-center gap-0.5">
+          <button
+            onClick={goToPrev}
+            disabled={!hasPrev}
+            className="p-1.5 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-default rounded transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+
+          <select
+            value={fileKey}
+            onChange={(e) => {
+              navigate({
+                to: "/builder/$fileKey",
+                params: { fileKey: e.target.value },
+              });
+            }}
+            className="px-2 py-1 border border-neutral-200 rounded text-sm bg-white hover:border-neutral-300 focus:border-neutral-400 outline-none cursor-pointer"
+          >
+            {SLIDE_CONFIG.map((slide, i) => (
+              <option key={slide.fileKey} value={slide.fileKey}>
+                {String(i + 1).padStart(2, "0")} — {slide.title}
+              </option>
+            ))}
+          </select>
+
+          <button
+            onClick={goToNext}
+            disabled={!hasNext}
+            className="p-1.5 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-default rounded transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <span className="text-xs text-neutral-300 tabular-nums">
+          {slideIndex + 1}/{SLIDE_CONFIG.length}
+        </span>
+
+        <div className="ml-auto flex items-center gap-1">
+          <GitStatusIndicator />
+          <button
+            onClick={() => setAssetBrowserOpen(true)}
+            className="flex items-center gap-1.5 px-2 py-1.5 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-md transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
+              <circle cx="5.5" cy="6.5" r="1.25" stroke="currentColor" strokeWidth="1.1"/>
+              <path d="M2 11l3.5-3 2.5 2 3-3.5L14 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span className="text-xs font-medium">Assets</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-1 min-h-0">
+        <SlidePreview
+          fileKey={editSlide.fileKey}
+          slideNumber={editSlide.slideNumber}
+          containerRef={previewContainerRef}
+        />
+
+        <EditSidebar
+          selectedFileKey={editSlide.fileKey}
+          messages={editMessages}
+          status={generation.status}
+          onSendMessage={handleSendMessage}
+          onSendWithImage={handleSendWithImage}
+          onClearHistory={clearHistory}
+          grabbedContext={grabbedContext}
+          onDismissContext={clearContext}
+          width={sidebar.width}
+          isResizing={sidebar.isResizing}
+          onResizeMouseDown={sidebar.handleMouseDown}
+        />
+      </div>
+
+      <AssetBrowser open={assetBrowserOpen} onClose={() => setAssetBrowserOpen(false)} />
     </div>
   );
 }

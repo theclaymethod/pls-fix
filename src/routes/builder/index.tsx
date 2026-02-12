@@ -9,6 +9,7 @@ import { ApplyOverlay, SlideCardCheckbox } from "@/builder/components/apply-over
 import { DeckChatPanel } from "@/builder/components/deck-chat-panel";
 import { SortableSlideGrid } from "@/builder/components/sortable-slide-grid";
 import { SlideThumb } from "@/builder/components/slide-thumb";
+import { ThumbnailProvider } from "@/builder/hooks/use-thumbnail-cache";
 import { GitStatusIndicator } from "@/builder/components/git-status-indicator";
 
 const PANEL_STATE_KEY = "deck-panel-open";
@@ -154,6 +155,7 @@ function BuilderIndex() {
         </div>
       </div>
 
+      <ThumbnailProvider>
       <div className="flex flex-1 min-h-0">
       <div className="flex-1 min-w-0 overflow-y-auto">
         <div className="max-w-6xl mx-auto px-6 py-8">
@@ -177,7 +179,7 @@ function BuilderIndex() {
                         : "border-neutral-200 hover:border-neutral-400 hover:shadow-sm"
                     }`}
                   >
-                    <SlideThumb slideNumber={i + 1} />
+                    <SlideThumb fileKey={slide.fileKey} />
                     <div className="px-3 py-2.5">
                       <p className="text-sm font-medium text-neutral-800 truncate">
                         {slide.title}
@@ -213,6 +215,7 @@ function BuilderIndex() {
         />
       )}
       </div>
+      </ThumbnailProvider>
     </div>
   );
 }

@@ -152,6 +152,10 @@ export function getSlideConfig(slideNumber: number): SlideConfig | undefined {
   return SLIDE_CONFIG[slideNumber - 1];
 }
 
+export function loadSlideComponent(fileKey: string): Promise<ComponentType> {
+  return startLoading(fileKey).then((m) => m.default);
+}
+
 export function invalidateSlideCache(fileKey: string): void {
   loadedComponentCache.delete(fileKey);
   loadingPromiseCache.delete(fileKey);

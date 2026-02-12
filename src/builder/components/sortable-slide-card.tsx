@@ -3,6 +3,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import type { SlideConfig } from "@/deck/config";
+import { SlideThumb } from "./slide-thumb";
 
 interface SortableSlideCardProps {
   slide: SlideConfig;
@@ -45,13 +46,9 @@ export function SortableSlideCard({
       <Link
         to="/builder/$fileKey"
         params={{ fileKey: slide.fileKey }}
-        className="group block border border-neutral-200 rounded-lg bg-white hover:border-neutral-400 hover:shadow-sm transition-all"
+        className="group block border border-neutral-200 rounded-lg bg-white hover:border-neutral-400 hover:shadow-sm transition-all overflow-hidden"
       >
-        <div className="aspect-video bg-neutral-100 rounded-t-lg flex items-center justify-center">
-          <span className="text-3xl font-semibold text-neutral-300 group-hover:text-neutral-400 transition-colors">
-            {displayNumber}
-          </span>
-        </div>
+        <SlideThumb fileKey={slide.fileKey} />
         <div className="px-3 py-2.5">
           <p className="text-sm font-medium text-neutral-800 truncate">
             {slide.title}
@@ -85,11 +82,12 @@ export function SortableSlideCard({
         </div>
       )}
 
-      <div className="aspect-video bg-neutral-100 rounded-t-lg flex items-center justify-center relative">
+      <div className="relative">
+        <SlideThumb fileKey={slide.fileKey} />
         <div
           {...attributes}
           {...listeners}
-          className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center cursor-grab active:cursor-grabbing rounded-tl-lg hover:bg-neutral-200/50 transition-colors"
+          className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center cursor-grab active:cursor-grabbing rounded-tl-lg hover:bg-neutral-200/50 transition-colors z-10"
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-neutral-400">
             <circle cx="4" cy="2" r="1" fill="currentColor" />
@@ -101,17 +99,13 @@ export function SortableSlideCard({
           </svg>
         </div>
 
-        <span className="text-3xl font-semibold text-neutral-300">
-          {displayNumber}
-        </span>
-
         <button
           onClick={(e) => {
             e.stopPropagation();
             onDelete(slide.fileKey);
           }}
           disabled={isLocked}
-          className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center rounded bg-white/80 border border-neutral-200 text-neutral-400 hover:text-red-500 hover:border-red-300 hover:bg-red-50 transition-colors"
+          className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center rounded bg-white/80 border border-neutral-200 text-neutral-400 hover:text-red-500 hover:border-red-300 hover:bg-red-50 transition-colors z-10"
         >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
             <path d="M2 2l6 6M8 2l-6 6" />

@@ -50,6 +50,7 @@ export function Slide04Features() {
               icon={<CheckIcon />}
               title="Easy Integration"
               description="Connect with your existing tools in minutes, not hours"
+              className="border-2 border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-8"
             />
           </AnimatedEntry>
           <AnimatedEntry variant="slideUp">
@@ -57,6 +58,7 @@ export function Slide04Features() {
               icon={<ChartIcon />}
               title="Real-time Analytics"
               description="Track performance with live dashboards and custom reports"
+              className="border-2 border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-8"
             />
           </AnimatedEntry>
           <AnimatedEntry variant="slideUp">
@@ -64,6 +66,7 @@ export function Slide04Features() {
               icon={<ShieldIcon />}
               title="Enterprise Security"
               description="Bank-level encryption and compliance certifications"
+              className="border-2 border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-8"
             />
           </AnimatedEntry>
         </GridSection>

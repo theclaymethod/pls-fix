@@ -11,6 +11,65 @@ const WIREFRAME_DIR = resolve(PROJECT_ROOT, ".builder-tmp");
 const WIREFRAME_PATH = resolve(WIREFRAME_DIR, "wireframe.png");
 const ASSETS_DIR = resolve(PROJECT_ROOT, "public/assets");
 
+const FONTS_DIR = resolve(PROJECT_ROOT, "public/assets/fonts");
+const CUSTOM_FONTS_CSS = resolve(PROJECT_ROOT, "src/deck/custom-fonts.css");
+
+const FONT_EXTENSIONS = new Set([".woff2", ".woff", ".ttf", ".otf"]);
+
+const FORMAT_MAP: Record<string, string> = {
+  ".woff2": "woff2",
+  ".woff": "woff",
+  ".ttf": "truetype",
+  ".otf": "opentype",
+};
+
+function fontFamilyFromFilename(filename: string): string {
+  const base = filename.slice(0, filename.length - extname(filename).length);
+  return base
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function syncFontCSS(): void {
+  mkdirSync(FONTS_DIR, { recursive: true });
+  const files = readdirSync(FONTS_DIR).filter((f) => {
+    const ext = extname(f).toLowerCase();
+    return FONT_EXTENSIONS.has(ext);
+  });
+
+  const rules = files.map((f) => {
+    const ext = extname(f).toLowerCase();
+    const family = fontFamilyFromFilename(f);
+    const format = FORMAT_MAP[ext] ?? "truetype";
+    return `@font-face {\n  font-family: "${family}";\n  src: url("/assets/fonts/${f}") format("${format}");\n  font-display: swap;\n}`;
+  });
+
+  writeFileSync(CUSTOM_FONTS_CSS, rules.join("\n\n") + (rules.length ? "\n" : ""));
+  log("fonts", `synced ${files.length} font(s) → custom-fonts.css`);
+}
+
+function getCustomFontContext(): string {
+  mkdirSync(FONTS_DIR, { recursive: true });
+  const files = readdirSync(FONTS_DIR).filter((f) => {
+    const ext = extname(f).toLowerCase();
+    return FONT_EXTENSIONS.has(ext);
+  });
+  if (files.length === 0) return "";
+
+  const families = files.map(fontFamilyFromFilename);
+  const unique = [...new Set(families)];
+  return [
+    "",
+    "## Custom Fonts Available",
+    "The user has uploaded custom font files. These are already loaded via @font-face in src/deck/custom-fonts.css.",
+    "You can use them in theme.css --font-heading, --font-body, or --font-mono variables.",
+    "Available font families: " + unique.map((f) => `"${f}"`).join(", "),
+    "",
+  ].join("\n");
+}
+
+syncFontCSS();
+
 const DESIGN_SYSTEM_INDEX = [
   "Design system files (import from @/design-system):",
   "- typography.tsx — Heading, Body, Label, Caption, Mono",
@@ -252,9 +311,10 @@ const server = createServer(async (req, res) => {
 
       log("edit-ds", `prompt: "${prompt.slice(0, 80)}..." session=${sessionId ?? "new"}`);
 
+      const fontCtx = getCustomFontContext();
       const fullPrompt = sessionId
         ? `${prompt}${POST_CHANGE_INSTRUCTIONS}`
-        : `You are editing the design system for a slide deck.\n\n${DESIGN_SYSTEM_INDEX}\n\nAfter making changes, append a structured entry to src/design-system/CHANGELOG.md with the date and a summary of what changed.\n\n${prompt}${POST_CHANGE_INSTRUCTIONS}`;
+        : `You are editing the design system for a slide deck.\n\n${DESIGN_SYSTEM_INDEX}${fontCtx}\n\nAfter making changes, append a structured entry to src/design-system/CHANGELOG.md with the date and a summary of what changed.\n\n${prompt}${POST_CHANGE_INSTRUCTIONS}`;
 
       const args = sessionId
         ? ["--resume", sessionId, "-p", fullPrompt, "--verbose", "--output-format", "stream-json", "--dangerously-skip-permissions"]
@@ -367,6 +427,9 @@ const server = createServer(async (req, res) => {
       }
 
       promptParts.push("", DESIGN_SYSTEM_INDEX);
+
+      const fontCtx = getCustomFontContext();
+      if (fontCtx) promptParts.push(fontCtx);
 
       if (planOnly) {
         promptParts.push("", "IMPORTANT: Only analyze and produce a design plan. Do NOT write any files yet. Output a structured plan with design decisions for: color palette, typography scale, component styles, and overall aesthetic.");
@@ -548,6 +611,7 @@ const server = createServer(async (req, res) => {
       writeFileSync(filePath, buffer);
 
       log("assets", `uploaded ${folder ? folder + "/" : ""}${finalName} (${buffer.length} bytes)`);
+      if (folder === "fonts") syncFontCSS();
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ path: `${urlPrefix}/${finalName}`, filename: finalName, size: buffer.length }));
     } catch (err) {
@@ -619,6 +683,7 @@ const server = createServer(async (req, res) => {
         return;
       }
       unlinkSync(filePath);
+      if (folder === "fonts") syncFontCSS();
       log("assets", `deleted ${rawPath}`);
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ ok: true }));

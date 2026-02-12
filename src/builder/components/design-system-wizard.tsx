@@ -43,6 +43,7 @@ export function DesignSystemWizard() {
   const [step, setStep] = useState<WizardStep>("references");
 
   const inspiration = useAssets("inspiration");
+  const fonts = useAssets("fonts");
 
   const [urls, setUrls] = useState("");
   const [selectedPalette, setSelectedPalette] = useState<string | null>(null);
@@ -74,6 +75,22 @@ export function DesignSystemWizard() {
     );
     for (const file of files) inspiration.upload(file);
   }, [inspiration]);
+
+  const FONT_ACCEPT = ".woff2,.woff,.ttf,.otf";
+
+  const handleFontFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    for (const file of files) fonts.upload(file);
+  }, [fonts]);
+
+  const handleFontDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const FONT_EXTS = [".woff2", ".woff", ".ttf", ".otf"];
+    const files = Array.from(e.dataTransfer.files).filter((f) =>
+      FONT_EXTS.some((ext) => f.name.toLowerCase().endsWith(ext))
+    );
+    for (const file of files) fonts.upload(file);
+  }, [fonts]);
 
   const buildDescription = useCallback((): string => {
     const parts: string[] = [];
@@ -108,8 +125,17 @@ export function DesignSystemWizard() {
       parts.push(`Additional notes: ${additionalNotes.trim()}`);
     }
 
+    if (fonts.assets.length > 0) {
+      const families = fonts.assets.map((a) => {
+        const base = a.filename.replace(/\.[^.]+$/, "");
+        return base.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      });
+      const unique = [...new Set(families)];
+      parts.push(`Custom fonts uploaded: ${unique.map((f) => `"${f}"`).join(", ")}. These are loaded via @font-face and available for --font-heading, --font-body, or --font-mono.`);
+    }
+
     return parts.join("\n\n");
-  }, [selectedPalette, customColors, selectedTypography, selectedPersonality, additionalNotes, generatedPalettes]);
+  }, [selectedPalette, customColors, selectedTypography, selectedPersonality, additionalNotes, generatedPalettes, fonts.assets]);
 
   const handleGeneratePalette = useCallback(async () => {
     if (!palettePrompt.trim() && !(useRefImages && inspiration.assets.length > 0)) return;
@@ -522,6 +548,62 @@ export function DesignSystemWizard() {
         {/* Step 3: Typography */}
         {step === "typography" && (
           <div className="space-y-8 mt-8">
+            <div>
+              <h2 className="text-sm font-medium text-neutral-800 mb-1">
+                Custom Fonts
+              </h2>
+              <p className="text-xs text-neutral-500 mb-3">
+                Upload font files to use in your design system. Supports .woff2, .woff, .ttf, .otf.
+              </p>
+              <div
+                onDrop={handleFontDrop}
+                onDragOver={(e) => e.preventDefault()}
+                className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center hover:border-neutral-400 transition-colors"
+              >
+                <p className="text-sm text-neutral-500 mb-3">
+                  Drag and drop font files, or click to browse
+                </p>
+                <input
+                  type="file"
+                  accept={FONT_ACCEPT}
+                  multiple
+                  onChange={handleFontFileChange}
+                  className="hidden"
+                  id="font-upload"
+                />
+                <label
+                  htmlFor="font-upload"
+                  className="inline-block px-4 py-2 bg-white border border-neutral-300 rounded-lg text-sm text-neutral-700 cursor-pointer hover:bg-neutral-50"
+                >
+                  Browse Files
+                </label>
+              </div>
+              {fonts.assets.length > 0 && (
+                <div className="space-y-1.5 mt-3">
+                  {fonts.assets.map((asset) => (
+                    <div key={asset.filename} className="flex items-center justify-between px-3 py-2 bg-white border border-neutral-200 rounded-lg">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-neutral-400 shrink-0">
+                          <path d="M4 2h5l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1V3a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.3"/>
+                          <path d="M5 9h6M5 11.5h4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+                        </svg>
+                        <span className="text-sm text-neutral-700 truncate">{asset.filename}</span>
+                        <span className="text-xs text-neutral-400 shrink-0">{(asset.size / 1024).toFixed(0)} KB</span>
+                      </div>
+                      <button
+                        onClick={() => fonts.remove(asset.filename)}
+                        className="text-neutral-400 hover:text-red-500 transition-colors ml-2 shrink-0"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                          <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div>
               <h2 className="text-sm font-medium text-neutral-800 mb-1">
                 Typography Direction

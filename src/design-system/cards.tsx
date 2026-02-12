@@ -17,7 +17,7 @@ export function FeatureCard({
     <div className={cn("p-6", className)}>
       {icon && <div className="text-[48px] mb-4">{icon}</div>}
       <h3
-        className="text-[28px] mb-3"
+        className="text-[28px] uppercase mb-3"
         style={{
           fontFamily: "var(--font-heading)",
           color: "var(--color-text-primary)",
@@ -61,13 +61,9 @@ export function StatCard({
         {value}
       </div>
       <div
-        className="w-12 h-[3px] mx-auto mb-3"
-        style={{ backgroundColor: "var(--color-accent)" }}
-      />
-      <div
-        className="text-[16px] tracking-[0.1em] uppercase font-medium"
+        className="text-[18px] tracking-[0.15em] uppercase font-medium"
         style={{
-          fontFamily: "var(--font-mono)",
+          fontFamily: "var(--font-body)",
           color: "var(--color-text-secondary)",
         }}
       >
@@ -102,13 +98,13 @@ export function QuoteCard({
   return (
     <div className={cn("p-8", className)}>
       <p
-        className="text-[32px] leading-[1.25] italic mb-6"
+        className="text-[36px] leading-[1.3] uppercase mb-6"
         style={{
           fontFamily: "var(--font-heading)",
           color: "var(--color-text-primary)",
         }}
       >
-        &ldquo;{quote}&rdquo;
+        "{quote}"
       </p>
       <div className="flex items-center gap-4">
         <div
@@ -117,10 +113,7 @@ export function QuoteCard({
         >
           <span
             className="text-lg font-bold"
-            style={{
-              color: "var(--color-bg-primary)",
-              fontFamily: "var(--font-heading)",
-            }}
+            style={{ color: "var(--color-bg-primary)" }}
           >
             {attribution.charAt(0)}
           </span>
@@ -137,9 +130,9 @@ export function QuoteCard({
           </div>
           {role && (
             <div
-              className="text-[14px] tracking-[0.04em]"
+              className="text-[16px]"
               style={{
-                fontFamily: "var(--font-mono)",
+                fontFamily: "var(--font-body)",
                 color: "var(--color-text-muted)",
               }}
             >
@@ -167,9 +160,9 @@ export function InfoCard({
     <div className={cn("pl-4", className)}>
       <div className="flex items-start justify-between mb-3">
         <h4
-          className="text-[20px] font-semibold tracking-[0.04em] uppercase"
+          className="text-[20px] font-semibold uppercase tracking-[0.05em]"
           style={{
-            fontFamily: "var(--font-mono)",
+            fontFamily: "var(--font-body)",
             color: "var(--color-text-primary)",
           }}
         >
@@ -187,9 +180,7 @@ export function InfoCard({
         {items.map((item, i) => (
           <span key={i}>
             {item}
-            {i < items.length - 1 && (
-              <span className="mx-2" style={{ color: "var(--color-text-muted)" }}>/</span>
-            )}
+            {i < items.length - 1 && <span className="mx-2 opacity-50">|</span>}
           </span>
         ))}
       </div>
@@ -211,13 +202,13 @@ export function ProcessCard({
   return (
     <div className={cn("p-5", className)}>
       <div
-        className="text-[14px] font-mono mb-2"
-        style={{ color: "var(--color-accent)" }}
+        className="text-[16px] font-mono mb-2"
+        style={{ color: "var(--color-text-muted)" }}
       >
         {String(number).padStart(2, "0")}
       </div>
       <h4
-        className="text-[26px] mb-3"
+        className="text-[26px] uppercase mb-3"
         style={{
           fontFamily: "var(--font-heading)",
           color: "var(--color-text-primary)",

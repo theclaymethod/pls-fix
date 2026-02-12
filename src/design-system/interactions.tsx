@@ -265,7 +265,7 @@ export function StaggerContainer({
 export function ShineBorder({
   children,
   color = "var(--color-yellow)",
-  radius = 300,
+  radius = 500,
   borderWidth = 3,
   className,
 }: {

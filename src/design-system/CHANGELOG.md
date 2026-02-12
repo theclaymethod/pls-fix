@@ -1,5 +1,9 @@
 # Design System Changelog
 
+## 2026-02-11 — Increase ShineBorder default radius
+
+- **Changed** `ShineBorder` default `radius` from 300 to 500 for a larger, more visible glow effect
+
 ## 2026-02-11 — Add data visualization and advanced interactions
 
 - **Added** `data-viz.tsx` — six data visualization primitives: ProgressRing, AnimatedCounter, TrendIndicator, Sparkline, HarveyBall, MagnitudeBar

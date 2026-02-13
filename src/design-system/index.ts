@@ -73,3 +73,5 @@ export {
   CrosshairMark,
   RuleGrid,
 } from "./decorative";
+
+export { Iphone } from "./iphone";

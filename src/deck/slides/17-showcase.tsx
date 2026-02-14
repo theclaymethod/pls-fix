@@ -4,9 +4,10 @@ import {
   Eyebrow,
   SectionHeader,
   MonoText,
-  staggerContainerVariants,
+  GridSection,
+  HoverCard,
+  StaggerContainer,
   slideUpVariants,
-  hoverLift,
 } from "@/design-system";
 
 const projects = [
@@ -35,10 +36,7 @@ export function Slide17Showcase() {
     <SlideContainer mode="white">
       <div className="h-full flex flex-col">
         <div className="mb-8 text-center">
-          <Eyebrow
-            className="text-[20px]"
-            style={{ color: "var(--color-primary)" }}
-          >
+          <Eyebrow className="text-[20px] text-[var(--color-primary)]">
             Case Studies
           </Eyebrow>
           <SectionHeader
@@ -50,48 +48,41 @@ export function Slide17Showcase() {
         </div>
 
         <div className="flex-1 flex items-center justify-center">
-          <motion.div
-            className="grid grid-cols-3 gap-6 w-full max-w-5xl"
-            variants={staggerContainerVariants(0.1, 0.2)}
-            initial="hidden"
-            animate="visible"
-          >
-            {projects.map((project, idx) => (
-              <motion.div
-                key={idx}
-                variants={slideUpVariants}
-                whileHover={hoverLift}
-              >
-                <div className="flex flex-col group cursor-pointer">
-                  <div className="aspect-[3/4] overflow-hidden">
-                    <div
-                      className="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
-                      style={{
-                        backgroundImage: `url('${project.imageUrl}')`,
-                      }}
-                    />
-                  </div>
-                  <div className="mt-4 text-center">
-                    <h3
-                      className="text-[26px]"
-                      style={{
-                        fontFamily: "var(--font-heading)",
-                        color: "var(--color-text-primary)",
-                      }}
-                    >
-                      {project.title}
-                    </h3>
-                    <MonoText
-                      className="text-[20px] mt-1 block"
-                      style={{ color: "var(--color-text-muted)" }}
-                    >
-                      {project.subtitle}
-                    </MonoText>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+          <StaggerContainer stagger={0.1} delay={0.2} className="w-full max-w-5xl">
+            <GridSection columns={3} gap="md">
+              {projects.map((project, idx) => (
+                <motion.div key={idx} variants={slideUpVariants}>
+                  <HoverCard lift="sm" shadow={false} className="cursor-pointer group">
+                    <div className="aspect-[3/4] overflow-hidden">
+                      <div
+                        className="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+                        style={{
+                          backgroundImage: `url('${project.imageUrl}')`,
+                        }}
+                      />
+                    </div>
+                    <div className="mt-4 text-center">
+                      <h3
+                        className="text-[26px] uppercase"
+                        style={{
+                          fontFamily: "var(--font-heading)",
+                          color: "var(--color-text-primary)",
+                        }}
+                      >
+                        {project.title}
+                      </h3>
+                      <MonoText
+                        className="text-[20px] mt-1 block"
+                        style={{ color: "var(--color-text-muted)" }}
+                      >
+                        {project.subtitle}
+                      </MonoText>
+                    </div>
+                  </HoverCard>
+                </motion.div>
+              ))}
+            </GridSection>
+          </StaggerContainer>
         </div>
       </div>
     </SlideContainer>

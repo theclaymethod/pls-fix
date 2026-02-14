@@ -18,6 +18,9 @@ export {
 } from "./interactions";
 
 export {
+  BarChart,
+  DonutChart,
+  LineChart,
   ProgressRing,
   AnimatedCounter,
   TrendIndicator,

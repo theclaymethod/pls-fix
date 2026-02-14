@@ -114,7 +114,7 @@ const SLIDE_CONFIG_INTERNAL: SlideConfig[] = [
   { id: "browser", fileKey: "13-browser", title: "Browser Mockup", shortTitle: "Browser", isExample: true },
   { id: "team", fileKey: "14-team", title: "Team Members", shortTitle: "Team", isExample: true },
   { id: "partners", fileKey: "15-partners", title: "Tech Stack", shortTitle: "Stack", isExample: true },
-  { id: "process", fileKey: "16-process", title: "Process Cards", shortTitle: "Process", isExample: true },
+  { id: "process", fileKey: "16-process", title: "Data Dashboard", shortTitle: "Charts", isExample: true },
   { id: "showcase", fileKey: "17-showcase", title: "Three-Up Showcase", shortTitle: "Showcase", isExample: true },
 ];
 

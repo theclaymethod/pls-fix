@@ -23,6 +23,9 @@ import {
 } from "./interactions";
 import { slideUpVariants } from "./animations";
 import {
+  BarChart,
+  DonutChart,
+  LineChart,
   ProgressRing,
   AnimatedCounter,
   TrendIndicator,
@@ -981,6 +984,73 @@ export function DesignSystemShowcase() {
               <Label>Magnitude Bar — 1, 3, 5 of 5</Label>
             </div>
           </div>
+
+          <Divider thickness="thin" className="my-12" />
+
+          <Eyebrow className="mb-6">Bar Chart</Eyebrow>
+          <BodyText size="sm" className="mb-4">
+            Vertical bars with spring-animated heights. Pass data array to update.
+          </BodyText>
+          <div className="flex items-end gap-12 mb-16">
+            <BarChart
+              data={[
+                { label: "Jan", value: 42 },
+                { label: "Feb", value: 78 },
+                { label: "Mar", value: 55 },
+                { label: "Apr", value: 91 },
+                { label: "May", value: 64 },
+              ]}
+              width={320}
+              height={200}
+            />
+            <BarChart
+              data={[
+                { label: "A", value: 30, color: "var(--color-yellow)" },
+                { label: "B", value: 85, color: "var(--color-text-primary)" },
+                { label: "C", value: 60, color: "var(--color-text-muted)" },
+              ]}
+              width={200}
+              height={200}
+            />
+          </div>
+
+          <Eyebrow className="mb-6">Donut Chart</Eyebrow>
+          <BodyText size="sm" className="mb-4">
+            Ring chart with animated arc transitions. Segments spring to new angles on data change.
+          </BodyText>
+          <div className="flex items-start gap-12 mb-16">
+            <DonutChart
+              data={[
+                { label: "Direct", value: 45 },
+                { label: "Organic", value: 30 },
+                { label: "Referral", value: 15 },
+                { label: "Paid", value: 10 },
+              ]}
+              size={200}
+            />
+            <DonutChart
+              data={[
+                { label: "Complete", value: 72 },
+                { label: "Remaining", value: 28 },
+              ]}
+              size={200}
+              thickness={24}
+            />
+          </div>
+
+          <Eyebrow className="mb-6">Line Chart</Eyebrow>
+          <BodyText size="sm" className="mb-4">
+            Multi-series line chart. Lines and dots spring to new positions when data changes.
+          </BodyText>
+          <LineChart
+            series={[
+              { label: "Revenue", data: [20, 35, 28, 45, 52, 48, 65] },
+              { label: "Costs", data: [30, 28, 32, 25, 30, 35, 28] },
+            ]}
+            labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"]}
+            width={500}
+            height={240}
+          />
         </BriefSection>
       </SlideContainer>
 

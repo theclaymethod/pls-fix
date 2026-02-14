@@ -50,7 +50,7 @@ Regenerate these files based on the user's intent:
 | `src/design-system/decorative.tsx` | Decorative elements (icons, grids, marks, backgrounds) |
 | `src/design-system/showcase.tsx` | Showcase component that demonstrates all design system primitives |
 | `src/design-system/interactions.tsx` | Interactive primitives (hover, accordion, tabs, etc.) |
-| `src/design-system/data-viz.tsx` | Data visualization primitives |
+| `src/design-system/data-viz.tsx` | Data visualization primitives (charts: BarChart, DonutChart, LineChart; metrics: ProgressRing, AnimatedCounter, TrendIndicator, Sparkline, HarveyBall, MagnitudeBar) |
 | `src/design-system/animations.ts` | Motion/framer-motion animation variants |
 | `src/design-system/index.ts` | Barrel file re-exporting everything |
 
@@ -58,6 +58,7 @@ Regenerate these files based on the user's intent:
 - Preserve all existing component names and prop interfaces — slides depend on them
 - Every component exported in the current `index.ts` must still be exported
 - New components can be added, but nothing removed
+- Chart components (BarChart, DonutChart, LineChart) in data-viz.tsx use `motion.rect`, `motion.path`, `motion.polyline`, and `motion.circle` for animated data transitions — preserve this animation pattern when regenerating
 - Use CSS custom properties from theme.css for all colors — never hardcode hex in components
 - `SlideContainer` must always set up the 1920x1080 slide frame with proper padding and CSS variable scoping per mode
 

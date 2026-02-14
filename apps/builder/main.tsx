@@ -1,4 +1,4 @@
-import "@/app.css";
+import "./app.css";
 import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "@tanstack/react-router";

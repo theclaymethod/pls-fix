@@ -1,16 +1,19 @@
 import { useState } from "react";
+import { motion } from "motion/react";
 import {
   SlideContainer,
   Eyebrow,
   SectionHeader,
   MonoText,
+  Label,
+  TwoColumnLayout,
+  StaggerContainer,
+  AnimatedEntry,
   BarChart,
   DonutChart,
   LineChart,
-  staggerContainerVariants,
   slideUpVariants,
 } from "@/design-system";
-import { motion } from "motion/react";
 
 const datasets = {
   q1: {
@@ -89,82 +92,61 @@ export function Slide16Process() {
 
   return (
     <SlideContainer mode="dark">
-      <div className="h-full flex">
-        <motion.div
-          className="w-1/3 flex flex-col justify-center pr-12"
-          variants={staggerContainerVariants(0.12, 0)}
-          initial="hidden"
-          animate="visible"
-        >
-          <motion.div variants={slideUpVariants}>
-            <Eyebrow className="text-[20px]">Analytics</Eyebrow>
-          </motion.div>
-          <motion.div variants={slideUpVariants}>
-            <SectionHeader
-              className="mt-2"
-              style={{ fontSize: "clamp(2rem, 4vw, 2.5rem)" }}
-            >
-              Data Dashboard
-            </SectionHeader>
-          </motion.div>
-          <motion.div variants={slideUpVariants}>
-            <MonoText
-              className="mt-4 block text-[14px]"
-              style={{ color: "var(--color-text-muted)" }}
-            >
-              Select a quarter to see metrics animate between states.
-            </MonoText>
-          </motion.div>
-
-          <motion.div className="flex gap-3 mt-8" variants={slideUpVariants}>
-            {(Object.keys(datasets) as DatasetKey[]).map((key) => (
-              <button
-                key={key}
-                onClick={() => setActive(key)}
-                className="px-4 py-2 text-[14px] tracking-[0.1em] uppercase font-medium border-2 transition-colors"
-                style={{
-                  fontFamily: "var(--font-body)",
-                  borderColor:
-                    active === key
-                      ? "var(--color-text-primary)"
-                      : "var(--color-border-light)",
-                  backgroundColor:
-                    active === key
-                      ? "var(--color-text-primary)"
-                      : "transparent",
-                  color:
-                    active === key
-                      ? "var(--color-text-inverse)"
-                      : "var(--color-text-muted)",
-                }}
+      <TwoColumnLayout
+        ratio="1:2"
+        gap="lg"
+        left={
+          <StaggerContainer stagger={0.12} delay={0}>
+            <motion.div variants={slideUpVariants}>
+              <Eyebrow className="text-[20px]">Analytics</Eyebrow>
+            </motion.div>
+            <motion.div variants={slideUpVariants}>
+              <SectionHeader
+                className="mt-2"
+                style={{ fontSize: "clamp(2rem, 4vw, 2.5rem)" }}
               >
-                {datasets[key].label}
-              </button>
-            ))}
-          </motion.div>
-        </motion.div>
-
-        <div className="w-2/3 flex flex-col justify-center gap-10 pl-8">
-          <div className="flex gap-10 items-start">
-            <BarChart
-              data={data.bar}
-              width={340}
-              height={220}
-            />
-            <DonutChart
-              data={data.donut}
-              size={220}
-              thickness={36}
-            />
-          </div>
-          <LineChart
-            series={data.line.series}
-            labels={data.line.labels}
-            width={700}
-            height={220}
-          />
-        </div>
-      </div>
+                Data Dashboard
+              </SectionHeader>
+            </motion.div>
+            <motion.div variants={slideUpVariants}>
+              <MonoText
+                className="mt-4 block text-[14px]"
+                style={{ color: "var(--color-text-muted)" }}
+              >
+                Select a quarter to see metrics animate between states.
+              </MonoText>
+            </motion.div>
+            <motion.div className="flex gap-3 mt-8" variants={slideUpVariants}>
+              {(Object.keys(datasets) as DatasetKey[]).map((key) => (
+                <button key={key} onClick={() => setActive(key)}>
+                  <Label
+                    variant={active === key ? "primary" : "default"}
+                    className="cursor-pointer"
+                  >
+                    {datasets[key].label}
+                  </Label>
+                </button>
+              ))}
+            </motion.div>
+          </StaggerContainer>
+        }
+        right={
+          <AnimatedEntry variant="fade" delay={0.3}>
+            <div className="flex flex-col justify-center gap-10">
+              <div className="flex gap-10 items-start">
+                <BarChart data={data.bar} width={340} height={220} />
+                <DonutChart data={data.donut} size={220} thickness={36} />
+              </div>
+              <LineChart
+                series={data.line.series}
+                labels={data.line.labels}
+                width={700}
+                height={220}
+              />
+            </div>
+          </AnimatedEntry>
+        }
+      />
     </SlideContainer>
   );
 }

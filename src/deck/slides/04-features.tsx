@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import {
   SlideContainer,
   Eyebrow,
@@ -5,9 +6,9 @@ import {
   Divider,
   GridSection,
   FeatureCard,
-  AnimatedEntry,
-  StaggerContainer,
-  HoverCard,
+  staggerContainerVariants,
+  slideUpVariants,
+  ShineBorder,
 } from "@/design-system";
 
 const CheckIcon = () => (
@@ -29,57 +30,65 @@ const ShieldIcon = () => (
   </svg>
 );
 
+const features = [
+  {
+    icon: <CheckIcon />,
+    title: "Easy Integration",
+    description: "Connect with your existing tools in minutes, not hours",
+  },
+  {
+    icon: <ChartIcon />,
+    title: "Real-time Analytics",
+    description: "Track performance with live dashboards and custom reports",
+  },
+  {
+    icon: <ShieldIcon />,
+    title: "Enterprise Security",
+    description: "Bank-level encryption and compliance certifications",
+  },
+];
+
 export function Slide04Features() {
   return (
     <SlideContainer mode="light" className="flex flex-col">
-      <StaggerContainer stagger={0.12} delay={0} className="mb-12">
-        <AnimatedEntry variant="slideUp" className="mb-4">
+      <motion.div
+        variants={staggerContainerVariants(0.12, 0)}
+        initial="hidden"
+        animate="visible"
+        className="mb-12"
+      >
+        <motion.div variants={slideUpVariants} className="mb-4">
           <Eyebrow>Capabilities</Eyebrow>
-        </AnimatedEntry>
-        <AnimatedEntry variant="slideUp" className="mb-8">
+        </motion.div>
+        <motion.div variants={slideUpVariants} className="mb-8">
           <SectionHeader>Key Features</SectionHeader>
-        </AnimatedEntry>
-        <AnimatedEntry variant="slideUp">
+        </motion.div>
+        <motion.div variants={slideUpVariants}>
           <Divider />
-        </AnimatedEntry>
-      </StaggerContainer>
+        </motion.div>
+      </motion.div>
 
-      <StaggerContainer stagger={0.15} delay={0.3} className="flex-1 flex items-center">
-        <div style={{ "--radius-sm": "0px" } as React.CSSProperties}>
+      <motion.div
+        variants={staggerContainerVariants(0.15, 0.3)}
+        initial="hidden"
+        animate="visible"
+        className="flex-1 flex items-center"
+      >
         <GridSection columns={3} gap="lg" className="w-full">
-          <AnimatedEntry variant="slideUp">
-            <HoverCard lift="md" shadow>
-              <FeatureCard
-                icon={<CheckIcon />}
-                title="Easy Integration"
-                description="Connect with your existing tools in minutes, not hours"
-                className="border-2 border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-8"
-              />
-            </HoverCard>
-          </AnimatedEntry>
-          <AnimatedEntry variant="slideUp">
-            <HoverCard lift="md" shadow>
-              <FeatureCard
-                icon={<ChartIcon />}
-                title="Real-time Analytics"
-                description="Track performance with live dashboards and custom reports"
-                className="border-2 border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-8"
-              />
-            </HoverCard>
-          </AnimatedEntry>
-          <AnimatedEntry variant="slideUp">
-            <HoverCard lift="md" shadow>
-              <FeatureCard
-                icon={<ShieldIcon />}
-                title="Enterprise Security"
-                description="Bank-level encryption and compliance certifications"
-                className="border-2 border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-8"
-              />
-            </HoverCard>
-          </AnimatedEntry>
+          {features.map((feature) => (
+            <motion.div key={feature.title} variants={slideUpVariants}>
+              <ShineBorder>
+                <FeatureCard
+                  icon={feature.icon}
+                  title={feature.title}
+                  description={feature.description}
+                  className="border-2 border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-8"
+                />
+              </ShineBorder>
+            </motion.div>
+          ))}
         </GridSection>
-        </div>
-      </StaggerContainer>
+      </motion.div>
     </SlideContainer>
   );
 }

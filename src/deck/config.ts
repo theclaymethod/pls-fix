@@ -5,6 +5,7 @@ export interface SlideConfig {
   title: string;
   shortTitle: string;
   fileKey: string;
+  isExample?: boolean;
 }
 
 /**
@@ -46,8 +47,6 @@ const slideLoaders: Record<string, () => Promise<{ default: ComponentType }>> = 
     import("./slides/16-process").then((m) => ({ default: m.Slide16Process })),
   "17-showcase": () =>
     import("./slides/17-showcase").then((m) => ({ default: m.Slide17Showcase })),
-  "18-text-4": () =>
-    import("./slides/18-text-4").then((m) => ({ default: m.Slide18Text4 })),
 };
 
 // Cache for loaded components (bypasses lazy entirely once loaded)
@@ -100,29 +99,30 @@ function getComponent(fileKey: string): ComponentType {
 }
 
 const SLIDE_CONFIG_INTERNAL: SlideConfig[] = [
-  { id: "title", fileKey: "01-title", title: "Title Slide", shortTitle: "Title" },
-  { id: "problem", fileKey: "02-problem", title: "Before & After", shortTitle: "Problem" },
-  { id: "intro", fileKey: "03-intro", title: "Introduction", shortTitle: "Intro" },
-  { id: "features", fileKey: "04-features", title: "Key Features", shortTitle: "Features" },
-  { id: "stats", fileKey: "05-stats", title: "Impact Metrics", shortTitle: "Stats" },
-  { id: "timeline", fileKey: "06-timeline", title: "Project Timeline", shortTitle: "Timeline" },
-  { id: "comparison", fileKey: "07-comparison", title: "Feature Matrix", shortTitle: "Compare" },
-  { id: "quote", fileKey: "08-quote", title: "Testimonial", shortTitle: "Quote" },
-  { id: "closing", fileKey: "09-closing", title: "Closing Number", shortTitle: "Close" },
-  { id: "fullscreen", fileKey: "10-fullscreen", title: "Fullscreen Image", shortTitle: "Hero" },
-  { id: "gallery", fileKey: "11-gallery", title: "Photo Gallery", shortTitle: "Gallery" },
-  { id: "mobile", fileKey: "12-mobile", title: "Mobile Mockup", shortTitle: "Mobile" },
-  { id: "browser", fileKey: "13-browser", title: "Browser Mockup", shortTitle: "Browser" },
-  { id: "team", fileKey: "14-team", title: "Team Members", shortTitle: "Team" },
-  { id: "partners", fileKey: "15-partners", title: "Tech Stack", shortTitle: "Stack" },
-  { id: "process", fileKey: "16-process", title: "Process Cards", shortTitle: "Process" },
-  { id: "showcase", fileKey: "17-showcase", title: "Three-Up Showcase", shortTitle: "Showcase" },
-  { id: "text-4", fileKey: "18-text-4", title: "Text 4", shortTitle: "Text 4" },
+  { id: "title", fileKey: "01-title", title: "Title Slide", shortTitle: "Title", isExample: true },
+  { id: "problem", fileKey: "02-problem", title: "Before & After", shortTitle: "Problem", isExample: true },
+  { id: "intro", fileKey: "03-intro", title: "Introduction", shortTitle: "Intro", isExample: true },
+  { id: "features", fileKey: "04-features", title: "Key Features", shortTitle: "Features", isExample: true },
+  { id: "stats", fileKey: "05-stats", title: "Impact Metrics", shortTitle: "Stats", isExample: true },
+  { id: "timeline", fileKey: "06-timeline", title: "Project Timeline", shortTitle: "Timeline", isExample: true },
+  { id: "comparison", fileKey: "07-comparison", title: "Feature Matrix", shortTitle: "Compare", isExample: true },
+  { id: "quote", fileKey: "08-quote", title: "Testimonial", shortTitle: "Quote", isExample: true },
+  { id: "closing", fileKey: "09-closing", title: "Closing Number", shortTitle: "Close", isExample: true },
+  { id: "fullscreen", fileKey: "10-fullscreen", title: "Fullscreen Image", shortTitle: "Hero", isExample: true },
+  { id: "gallery", fileKey: "11-gallery", title: "Photo Gallery", shortTitle: "Gallery", isExample: true },
+  { id: "mobile", fileKey: "12-mobile", title: "Mobile Mockup", shortTitle: "Mobile", isExample: true },
+  { id: "browser", fileKey: "13-browser", title: "Browser Mockup", shortTitle: "Browser", isExample: true },
+  { id: "team", fileKey: "14-team", title: "Team Members", shortTitle: "Team", isExample: true },
+  { id: "partners", fileKey: "15-partners", title: "Tech Stack", shortTitle: "Stack", isExample: true },
+  { id: "process", fileKey: "16-process", title: "Process Cards", shortTitle: "Process", isExample: true },
+  { id: "showcase", fileKey: "17-showcase", title: "Three-Up Showcase", shortTitle: "Showcase", isExample: true },
 ];
 
 export const SLIDE_CONFIG: SlideConfig[] = SLIDE_CONFIG_INTERNAL;
 
 export const TOTAL_SLIDES = SLIDE_CONFIG.length;
+
+export const HAS_EXAMPLE_SLIDES = SLIDE_CONFIG.some((s) => s.isExample);
 
 /**
  * Preload a slide's chunk by triggering the dynamic import

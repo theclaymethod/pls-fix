@@ -73,9 +73,9 @@ If the build fails, fix the errors and re-run until clean.
 
 Open a browser and visually inspect the generated design system.
 
-1. **Ensure dev server is running**: Check if `http://localhost:3000` responds. If not, start `pnpm dev` in the background and wait for it to be ready.
+1. **Ensure dev server is running**: Read `.dev-ports` in the project root to get the `builder` port. If the file doesn't exist or the port doesn't respond, start `pnpm dev` in the background and wait for `.dev-ports` to appear.
 
-2. **Navigate to the showcase**: Open `http://localhost:3000/builder/designer` in the browser.
+2. **Navigate to the showcase**: Open `http://localhost:{builder port}/builder/designer` in the browser.
 
 3. **Take a full-page screenshot** of the design system showcase.
 
@@ -95,7 +95,8 @@ Open a browser and visually inspect the generated design system.
 After successful verification, fire a background assessment to generate the design brief:
 
 ```bash
-curl -s -X POST http://localhost:3333/api/assess-design-system \
+# Read the API port from .dev-ports (the "api" key)
+curl -s -X POST http://localhost:{api port}/api/assess-design-system \
   -H "Content-Type: application/json" \
   -d '{"description": "<the user intent description>", "imagePaths": [<inspiration paths if any>]}'
 ```

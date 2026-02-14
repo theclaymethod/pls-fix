@@ -738,7 +738,7 @@ const server = createServer(async (req, res) => {
         "   - src/design-system/layout.tsx",
         "   - src/design-system/cards.tsx",
         "   - src/design-system/decorative.tsx",
-        "   - src/design-system/showcase.tsx",
+        "   - src/design-system/showcase/ (index.tsx + per-section files)",
         "3. Assess alignment between inspiration/intent and implementation",
         "4. Write src/design-system/design-brief.md with this exact structure:",
         "",

@@ -32,7 +32,7 @@ Read these files to understand the existing design system structure and exports:
 - `src/design-system/interactions.tsx`
 - `src/design-system/data-viz.tsx`
 - `src/design-system/animations.ts`
-- `src/design-system/showcase.tsx`
+- `src/design-system/showcase/` (directory — `index.tsx` barrel + per-section files)
 - `src/deck/theme.css`
 
 If reference images exist in `public/assets/inspiration/`, read each one to analyze visual style.
@@ -48,7 +48,7 @@ Regenerate these files based on the user's intent:
 | `src/design-system/layout.tsx` | Layout primitives (SlideContainer, TwoColumnLayout, GridSection, etc.) |
 | `src/design-system/cards.tsx` | Card components (FeatureCard, StatCard, QuoteCard, etc.) |
 | `src/design-system/decorative.tsx` | Decorative elements (icons, grids, marks, backgrounds) |
-| `src/design-system/showcase.tsx` | Showcase component that demonstrates all design system primitives |
+| `src/design-system/showcase/` | Showcase directory — `index.tsx` barrel composes per-section files (`cover.tsx`, `01-brand.tsx` … `14-effects.tsx`), `helpers.tsx` has shared components (BriefSection, ColorSwatch, TypeSpecimen, ReplayWrapper) |
 | `src/design-system/interactions.tsx` | Interactive primitives (hover, accordion, tabs, etc.) |
 | `src/design-system/data-viz.tsx` | Data visualization primitives (charts: BarChart, DonutChart, LineChart; metrics: ProgressRing, AnimatedCounter, TrendIndicator, Sparkline, HarveyBall, MagnitudeBar) |
 | `src/design-system/animations.ts` | Motion/framer-motion animation variants |

@@ -1,13 +1,11 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, type ComponentType } from "react";
 import { createRoot } from "react-dom/client";
 import { flushSync } from "react-dom";
-import { toJpeg } from "html-to-image";
-import { jsPDF } from "jspdf";
 import { SLIDE_CONFIG, loadSlideComponent } from "@/deck/config";
 import { deckConfig } from "../../../deck.config";
 
 const { width: W, height: H } = deckConfig.design;
-const ANIMATION_SETTLE_MS = 1000;
+const RENDER_SETTLE_MS = 2000;
 
 interface PdfExportProgress {
   current: number;
@@ -32,67 +30,71 @@ export function usePdfExport(): PdfExportState {
     setIsExporting(true);
     cancelledRef.current = false;
 
-    const host = document.createElement("div");
-    host.style.cssText = "position:fixed;left:-9999px;top:0;pointer-events:none";
-    document.body.appendChild(host);
-
     const total = SLIDE_CONFIG.length;
-    const images: string[] = [];
 
     try {
+      const components: ComponentType[] = [];
       for (let i = 0; i < total; i++) {
         if (cancelledRef.current) return;
-
         setProgress({ current: i + 1, total });
-        const slide = SLIDE_CONFIG[i];
-
-        const container = document.createElement("div");
-        container.style.cssText = `width:${W}px;height:${H}px;overflow:hidden`;
-        host.appendChild(container);
-
-        const Component = await loadSlideComponent(slide.fileKey);
-        const root = createRoot(container);
-        flushSync(() => root.render(<Component />));
-        await new Promise((r) => setTimeout(r, ANIMATION_SETTLE_MS));
-
-        if (cancelledRef.current) {
-          root.unmount();
-          container.remove();
-          return;
-        }
-
-        const dataUrl = await toJpeg(container, {
-          width: W,
-          height: H,
-          pixelRatio: 1,
-          skipFonts: true,
-          quality: 0.85,
-        });
-
-        images.push(dataUrl);
-        root.unmount();
-        container.remove();
+        const Component = await loadSlideComponent(SLIDE_CONFIG[i].fileKey);
+        components.push(Component);
       }
 
       if (cancelledRef.current) return;
 
-      const pdf = new jsPDF({
-        orientation: "landscape",
-        unit: "px",
-        format: [W, H],
-        hotfixes: ["px_scaling"],
-      });
-
-      for (let i = 0; i < images.length; i++) {
-        if (i > 0) pdf.addPage([W, H], "landscape");
-        pdf.addImage(images[i], "JPEG", 0, 0, W, H);
+      const printWin = window.open("", "pdf-export");
+      if (!printWin) {
+        alert("Please allow popups to export PDF.");
+        return;
       }
 
-      const title = deckConfig.title || "presentation";
-      const safeName = title.replace(/[^a-zA-Z0-9-_ ]/g, "").trim() || "deck";
-      pdf.save(`${safeName}.pdf`);
+      const doc = printWin.document;
+      doc.open();
+      doc.write("<!DOCTYPE html><html><head></head><body></body></html>");
+      doc.close();
+      doc.title = deckConfig.title || "Presentation";
+
+      document.head
+        .querySelectorAll('style, link[rel="stylesheet"]')
+        .forEach((el) => doc.head.appendChild(el.cloneNode(true)));
+
+      const printCSS = doc.createElement("style");
+      printCSS.textContent = `
+        @page { size: ${W}px ${H}px; margin: 0; }
+        html, body { margin: 0; padding: 0; }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+        .slide-page { width: ${W}px; height: ${H}px; overflow: hidden; break-after: page; }
+        .slide-page:last-child { break-after: auto; }
+      `;
+      doc.head.appendChild(printCSS);
+
+      const roots: ReturnType<typeof createRoot>[] = [];
+      for (const Component of components) {
+        if (cancelledRef.current) {
+          printWin.close();
+          return;
+        }
+        const page = doc.createElement("div");
+        page.className = "slide-page";
+        doc.body.appendChild(page);
+        const root = createRoot(page);
+        flushSync(() => root.render(<Component />));
+        roots.push(root);
+      }
+
+      await new Promise((r) => setTimeout(r, RENDER_SETTLE_MS));
+
+      if (cancelledRef.current) {
+        roots.forEach((r) => r.unmount());
+        printWin.close();
+        return;
+      }
+
+      printWin.focus();
+      printWin.print();
+      roots.forEach((r) => r.unmount());
     } finally {
-      host.remove();
       setIsExporting(false);
       setProgress(null);
     }
